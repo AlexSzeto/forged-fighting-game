@@ -33,7 +33,7 @@ class CollisionBox extends Rectangle{
     }
 }
 
-class Frame {
+type Frame = {
     image: Image
     flipped: boolean
     hitbox: CollisionBox
@@ -43,7 +43,7 @@ class Frame {
     damage: number    
 }
 
-interface FighterData {
+type FighterData = {
     health: number
     frameData: Frame[]
 }
@@ -63,6 +63,13 @@ class Fighter {
         this.flipped = false
 
         this.sprite = sprites.create(this.frame.image, SpriteKind.Player)
+
+        if(spawnOnLeft) {
+            this.sprite.x = 40
+            this.frame.image.flipX()
+        } else {
+            this.sprite.x = 120
+        }
     }
 
     get frame():Frame { return this.frameData[this.currentFrame] }
@@ -72,10 +79,33 @@ class Fighter {
     }
 }
 
-const test:Sprite = sprites.create(assets.image`test`)
-const flipTest = assets.image`test`.clone()
-flipTest.flipX()
-const test2: Sprite = sprites.create(flipTest)
+const p1data:FighterData = {
+    health: 100,
+    frameData: [
+        {
+            image: assets.image`test1`,
+            flipped: false,
+            hitbox: null,
+            hurtbox: null,
+            invincible: false,
+            damage: 0
+        }
+    ]
+}
 
-test.x += scene.screenWidth() / 4
-test2.x -= scene.screenWidth() / 4
+const p2data: FighterData = {
+    health: 100,
+    frameData: [
+        {
+            image: assets.image`test2`,
+            flipped: false,
+            hitbox: null,
+            hurtbox: null,
+            invincible: false,
+            damage: 0
+        }
+    ]
+}
+
+const p1 = new Fighter(p1data, true)
+const p2 = new Fighter(p2data, false)
