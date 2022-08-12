@@ -34,7 +34,7 @@ class CollisionBox extends Rectangle{
 }
 
 type Frame = {
-    image: Image
+    images: Image[]
     flipped: boolean
     hitbox: CollisionBox
     hurtbox: CollisionBox
@@ -62,11 +62,14 @@ class Fighter {
         this.currentFrame = 0
         this.flipped = false
 
-        this.sprite = sprites.create(this.frame.image, SpriteKind.Player)
+        this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
+        animation.runImageAnimation(this.sprite, this.frame.images, 200, false)
 
         if(spawnOnLeft) {
             this.sprite.x = 40
-            this.frame.image.flipX()
+            for(let image of this.frame.images) {
+                image.flipX()
+            }
         } else {
             this.sprite.x = 120
         }
@@ -83,7 +86,7 @@ const p1data:FighterData = {
     health: 100,
     frameData: [
         {
-            image: assets.image`test1`,
+            images: assets.animation`lyndsay-idle`,
             flipped: false,
             hitbox: null,
             hurtbox: null,
@@ -97,7 +100,7 @@ const p2data: FighterData = {
     health: 100,
     frameData: [
         {
-            image: assets.image`test2`,
+            images: assets.animation`lyndsay-idle`,
             flipped: false,
             hitbox: null,
             hurtbox: null,
