@@ -87,7 +87,10 @@ class Fighter {
 
     flipped: boolean
     state: FighterState
-    input: FighterInput
+
+    stickInput: FighterInput
+    punchInput: Boolean
+    kickInput: Boolean
 
 
     constructor(data: FighterData, spawnOnLeft: boolean) {
@@ -95,12 +98,12 @@ class Fighter {
 
         this.currentFrame = 'idle'
         this.state = FighterState.Idle
-        this.input = FighterInput.Neutral
+        this.stickInput = FighterInput.Neutral
         this.flipped = spawnOnLeft
 
         this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
         this.sprite.setFlag(SpriteFlag.StayInScreen, true)
-        this.sprite.ay = 200
+        this.sprite.ay = 400
         animation.runImageAnimation(this.sprite, this.frame.images, 200, false)
 
         if(spawnOnLeft) {
@@ -123,27 +126,63 @@ class Fighter {
         }
     }
 
+    isNeutral(): boolean {
+        return this.state == FighterState.Idle || this.state == FighterState.Walk
+    }
+
     update(): void {
         let nextState = this.state
 
-        // parse input
-        switch(this.input) {
-            case FighterInput.Forward:
-                this.sprite.vx = this.flipped ? 100 : -100
-                nextState = FighterState.Walk
-                break
-            case FighterInput.Back:
-                this.sprite.vx = this.flipped ? -50 : 50
-                nextState = FighterState.Walk
-                break
-            case FighterInput.Neutral:
-                if(nextState == FighterState.Walk) {
+        console.log(this.sprite.y)
+        // parse state changes
+        switch (this.state) {
+            case FighterState.Jump:
+                if(this.sprite.y >= 100) {
                     this.sprite.vx = 0
+                    this.sprite.vy = 0
                     nextState = FighterState.Idle
                 }
                 break
         }
-        this.input = FighterInput.Neutral
+
+        // parse input
+        if(this.isNeutral()) {
+            switch (this.stickInput) {
+                case FighterInput.Up:
+                    if (this.state != FighterState.Jump) {
+                        this.sprite.vy = -180
+                        nextState = FighterState.Jump
+                    }
+                    break
+                case FighterInput.UpForward:
+                    this.sprite.vx = this.flipped ? 50 : -50
+                    this.sprite.vy = -180
+                    nextState = FighterState.Jump
+                    break
+                case FighterInput.UpBack:
+                    this.sprite.vx = this.flipped ? -50 : 50
+                    this.sprite.vy = -180
+                    nextState = FighterState.Jump
+                    break
+                case FighterInput.Forward:
+                    this.sprite.vx = this.flipped ? 50 : -50
+                    nextState = FighterState.Walk
+                    break
+                case FighterInput.Back:
+                    this.sprite.vx = this.flipped ? -50 : 50
+                    nextState = FighterState.Walk
+                    break
+                case FighterInput.Neutral:
+                    if (this.state == FighterState.Walk) {
+                        this.sprite.vx = 0
+                        this.sprite.vy = 0
+                        nextState = FighterState.Idle
+                    }
+                    break
+            }
+        }
+
+        this.stickInput = FighterInput.Neutral
 
         if(this.state != nextState) {
             switch(nextState) {
@@ -152,6 +191,9 @@ class Fighter {
                     break
                 case FighterState.Walk:
                     this.currentFrame = 'walk'
+                    break
+                case FighterState.Jump:
+                    this.currentFrame = 'jump'
                     break
             }
             animation.runImageAnimation(this.sprite, this.frame.images, 200, this.frame.looping)
@@ -173,6 +215,11 @@ const p1data:FighterData = {
             images: assets.animation`lyndsay-walk`,
             looping: true,
             flipped: false,
+        },
+        'jump': {
+            images: assets.animation`lyndsay-jump`,
+            looping: false,
+            flipped: false,
         }
     }
 }
@@ -189,6 +236,11 @@ const p2data: FighterData = {
             images: assets.animation`lyndsay-walk`,
             looping: true,
             flipped: false,
+        },
+        'jump': {
+            images: assets.animation`lyndsay-jump`,
+            looping: false,
+            flipped: false,
         }
     }
 }
@@ -198,10 +250,32 @@ const p2 = new Fighter(p2data, false)
 
 game.onUpdate(() => {
     if(controller.left.isPressed()) {
-        p1.input = FighterInput.Back
+        if(controller.up.isPressed()) {
+            p1.stickInput = FighterInput.UpBack
+        } else if(controller.down.isPressed()) {
+            p1.stickInput = FighterInput.DownBack
+        } else {
+            p1.stickInput = FighterInput.Back
+        }
+    } else if (controller.right.isPressed()) {
+        if (controller.up.isPressed()) {
+            p1.stickInput = FighterInput.UpForward
+        } else if (controller.down.isPressed()) {
+            p1.stickInput = FighterInput.DownForward
+        } else {
+            p1.stickInput = FighterInput.Forward
+        }
+    } else if (controller.up.isPressed()) {
+        p1.stickInput = FighterInput.Up
+    } else if (controller.down.isPressed()) {
+        p1.stickInput = FighterInput.Down
     }
-    if (controller.right.isPressed()) {
-        p1.input = FighterInput.Forward
+
+    if(controller.A.isPressed()) {
+        p1.punchInput = true
+    }
+    if(controller.B.isPressed()) {
+        p1.kickInput = true
     }
 
     p1.update()
