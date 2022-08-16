@@ -1,3 +1,71 @@
+namespace timer {
+    export class Clock {
+        private timer: number
+        elapsed: number
+        trackers: Tracker[]
+
+        constructor() {
+            this.timer = game.runtime()
+            this.trackers = []
+        }
+
+        addTracker(period: number): Tracker {
+            const tracker = new Tracker(period)
+            this.trackers.push(tracker)
+            return tracker
+        }
+
+        update(): void {
+            const currentTime = game.runtime()
+            this.elapsed = currentTime - this.timer
+            this.timer = currentTime
+
+            for(let tracker of this.trackers) {
+                tracker.update(this.elapsed)
+            }
+        }
+    }
+
+    export class Tracker {
+        private _elapsed: number
+        private _period: number
+        private _triggered: number
+
+        constructor(period: number) {
+            this._elapsed = 0
+            this._period = period
+            this._triggered = 0
+        }
+
+        set period(value: number) {
+            this._period = value
+            if(value <= 0) {
+                this._elapsed = 0
+            }
+        }
+
+        get period(): number {
+            return this._period
+        }
+        
+        get triggered(): number {
+            return this._triggered
+        }
+
+        update(elapsed: number) {
+            if(this._period > 0) {
+                this._elapsed += elapsed
+                this._triggered = Math.floor(this._elapsed / this._period)
+                this._elapsed -= this._triggered * this._period
+            } else {
+                this._triggered = 0
+            }
+        }
+    }
+
+    export const clock = new Clock()
+}
+
 class Rectangle {
     x: number
     y: number
@@ -46,7 +114,7 @@ enum FighterState {
     JumpKick,
 }
 
-enum FighterInput {
+enum StickInput {
     Neutral,
     Forward,
     Back,
@@ -56,12 +124,11 @@ enum FighterInput {
     Up,
     UpForward,
     UpBack,
-    Punch,
-    Kick
 }
 
 type Frame = {
     images: Image[]
+    duration: number
     looping: boolean
     flipped: boolean
 
@@ -84,11 +151,12 @@ class Fighter {
     healthBar: Sprite
     frameData: FrameData
     currentFrame: string
+    timeTracker: timer.Tracker
 
     flipped: boolean
     state: FighterState
 
-    stickInput: FighterInput
+    stickInput: StickInput
     punchInput: Boolean
     kickInput: Boolean
 
@@ -98,13 +166,15 @@ class Fighter {
 
         this.currentFrame = 'idle'
         this.state = FighterState.Idle
-        this.stickInput = FighterInput.Neutral
+        this.stickInput = StickInput.Neutral
         this.flipped = spawnOnLeft
 
         this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
         this.sprite.setFlag(SpriteFlag.StayInScreen, true)
         this.sprite.ay = 400
         animation.runImageAnimation(this.sprite, this.frame.images, 200, false)
+
+        this.timeTracker = timer.clock.addTracker(this.frame.duration)
 
         if(spawnOnLeft) {
             this.sprite.x = 40
@@ -133,8 +203,16 @@ class Fighter {
     update(): void {
         let nextState = this.state
 
-        console.log(this.sprite.y)
         // parse state changes
+        if(this.timeTracker.triggered > 0) {
+            switch (this.state) {
+                case FighterState.Punch:
+                case FighterState.Kick:
+                    nextState = FighterState.Idle
+                    break
+            }
+        }
+
         switch (this.state) {
             case FighterState.Jump:
                 if(this.sprite.y >= 100) {
@@ -148,31 +226,31 @@ class Fighter {
         // parse input
         if(this.isNeutral()) {
             switch (this.stickInput) {
-                case FighterInput.Up:
+                case StickInput.Up:
                     if (this.state != FighterState.Jump) {
                         this.sprite.vy = -180
                         nextState = FighterState.Jump
                     }
                     break
-                case FighterInput.UpForward:
+                case StickInput.UpForward:
                     this.sprite.vx = this.flipped ? 50 : -50
                     this.sprite.vy = -180
                     nextState = FighterState.Jump
                     break
-                case FighterInput.UpBack:
+                case StickInput.UpBack:
                     this.sprite.vx = this.flipped ? -50 : 50
                     this.sprite.vy = -180
                     nextState = FighterState.Jump
                     break
-                case FighterInput.Forward:
+                case StickInput.Forward:
                     this.sprite.vx = this.flipped ? 50 : -50
                     nextState = FighterState.Walk
                     break
-                case FighterInput.Back:
+                case StickInput.Back:
                     this.sprite.vx = this.flipped ? -50 : 50
                     nextState = FighterState.Walk
                     break
-                case FighterInput.Neutral:
+                case StickInput.Neutral:
                     if (this.state == FighterState.Walk) {
                         this.sprite.vx = 0
                         this.sprite.vy = 0
@@ -181,8 +259,31 @@ class Fighter {
                     break
             }
         }
+        this.stickInput = StickInput.Neutral
 
-        this.stickInput = FighterInput.Neutral
+        if(this.punchInput) {
+            switch(nextState) {
+                case FighterState.Idle:
+                case FighterState.Walk:
+                    this.sprite.vx = 0
+                    this.sprite.vy = 0
+                    nextState = FighterState.Punch
+                    break
+            }
+        }
+        this.punchInput = false
+
+        if (this.kickInput) {
+            switch (nextState) {
+                case FighterState.Idle:
+                case FighterState.Walk:
+                    this.sprite.vx = 0
+                    this.sprite.vy = 0
+                    nextState = FighterState.Kick
+                    break
+            }
+        }
+        this.kickInput = false
 
         if(this.state != nextState) {
             switch(nextState) {
@@ -192,10 +293,17 @@ class Fighter {
                 case FighterState.Walk:
                     this.currentFrame = 'walk'
                     break
+                case FighterState.Punch:
+                    this.currentFrame = 'punch'
+                    break
+                case FighterState.Kick:
+                    this.currentFrame = 'kick'
+                    break                
                 case FighterState.Jump:
                     this.currentFrame = 'jump'
                     break
             }
+            this.timeTracker.period = this.frame.duration
             animation.runImageAnimation(this.sprite, this.frame.images, 200, this.frame.looping)
             this.adjustFrame()
             this.state = nextState
@@ -208,19 +316,34 @@ const p1data:FighterData = {
     frameData: {
         'idle': {
             images: assets.animation`lyndsay-idle`,
+            duration: 0,
             looping: false,
             flipped: false,
         },
         'walk': {
             images: assets.animation`lyndsay-walk`,
+            duration: 0,
             looping: true,
             flipped: false,
         },
         'jump': {
             images: assets.animation`lyndsay-jump`,
+            duration: 0,
             looping: false,
             flipped: false,
-        }
+        },
+        'punch': {
+            images: assets.animation`lyndsay-punch`,
+            duration: 300,
+            looping: false,
+            flipped: false,
+        },
+        'kick': {
+            images: assets.animation`lyndsay-kick`,
+            duration: 300,
+            looping: false,
+            flipped: false,
+        },        
     }
 }
 
@@ -229,19 +352,10 @@ const p2data: FighterData = {
     frameData: {
         'idle': {
             images: assets.animation`lyndsay-idle`,
+            duration: 0,
             looping: false,
             flipped: false,
         },
-        'walk': {
-            images: assets.animation`lyndsay-walk`,
-            looping: true,
-            flipped: false,
-        },
-        'jump': {
-            images: assets.animation`lyndsay-jump`,
-            looping: false,
-            flipped: false,
-        }
     }
 }
 
@@ -251,24 +365,24 @@ const p2 = new Fighter(p2data, false)
 game.onUpdate(() => {
     if(controller.left.isPressed()) {
         if(controller.up.isPressed()) {
-            p1.stickInput = FighterInput.UpBack
+            p1.stickInput = StickInput.UpBack
         } else if(controller.down.isPressed()) {
-            p1.stickInput = FighterInput.DownBack
+            p1.stickInput = StickInput.DownBack
         } else {
-            p1.stickInput = FighterInput.Back
+            p1.stickInput = StickInput.Back
         }
     } else if (controller.right.isPressed()) {
         if (controller.up.isPressed()) {
-            p1.stickInput = FighterInput.UpForward
+            p1.stickInput = StickInput.UpForward
         } else if (controller.down.isPressed()) {
-            p1.stickInput = FighterInput.DownForward
+            p1.stickInput = StickInput.DownForward
         } else {
-            p1.stickInput = FighterInput.Forward
+            p1.stickInput = StickInput.Forward
         }
     } else if (controller.up.isPressed()) {
-        p1.stickInput = FighterInput.Up
+        p1.stickInput = StickInput.Up
     } else if (controller.down.isPressed()) {
-        p1.stickInput = FighterInput.Down
+        p1.stickInput = StickInput.Down
     }
 
     if(controller.A.isPressed()) {
@@ -278,5 +392,6 @@ game.onUpdate(() => {
         p1.kickInput = true
     }
 
+    timer.clock.update()
     p1.update()
 })
