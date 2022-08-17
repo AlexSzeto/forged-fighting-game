@@ -44,10 +44,12 @@ namespace fighters {
                 this.sprite.x = 100
             }
 
-            this.frameData.update(this.sprite, this.faceRight)
+            this.frameData.setFrameSet('idle', this.sprite, this.faceRight)
         }
 
         update(): void {
+            this.input.update(this.faceRight)
+            
             let nextState = this.state
             let nextSetKey = ''
 
@@ -62,7 +64,7 @@ namespace fighters {
             }
 
             // parse input
-            if (NEUTRAL_STATES.indexOf(nextState) >= 0) {                
+            if (NEUTRAL_STATES.indexOf(nextState) >= 0) {
                 switch (this.input.stick) {
                     case inputs.StickState.Forward:
                         nextState = State.Walk
@@ -82,7 +84,7 @@ namespace fighters {
             // switch frame set
             if (this.state != nextState) {
                 this.state = nextState
-                this.frameData.frameSetKey = nextSetKey
+                this.frameData.setFrameSet(nextSetKey, this.sprite, this.faceRight)
             }
 
             this.frameData.update(this.sprite, this.faceRight)

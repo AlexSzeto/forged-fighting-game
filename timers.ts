@@ -5,6 +5,7 @@ namespace timers {
 
         constructor() {
             this.timer = game.runtime()
+            this.elapsed = 0
         }
 
         update(): void {

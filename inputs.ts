@@ -15,6 +15,8 @@ namespace inputs {
         stick: StickState
         punch: boolean
         kick: boolean
+
+        update(faceRight: boolean): void
     }
 
     export class ControllerInput implements Input {

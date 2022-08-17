@@ -8,11 +8,11 @@ namespace frames {
     ]
 
     type FrameParams = {
-        duration: number
-        loop: boolean
+        duration?: number
+        loop?: boolean
 
-        vx: number
-        vy: number
+        vx?: number
+        vy?: number
 
         // hitbox: CollisionBox
         // hurtbox: CollisionBox
@@ -21,7 +21,7 @@ namespace frames {
         // damage: number    
     }
 
-    type Frame = FrameParams &{
+    type Frame = FrameParams & {
         image: Image
         faceRight: boolean
     }
@@ -49,33 +49,22 @@ namespace frames {
                     faceRight: false,
 
                     duration: 200,
-                    loop: false,
+                    loop: true,
                     vx: 0,
                     vy: 0,
                 }
 
-                const params = data[index]
-                // hard coding object keys to get around a destructuring bug
-                for(const key of FrameParamsKeys) {
-                    if(params[key]) {
-                        result[key] = data[index][key]
-                    }
-                }
+                // // hard coding object keys to get around a destructuring bug
+                // for(const key of FrameParamsKeys) {
+                //     if(data[index][key]) {
+                //         result[key] = data[index][key]
+                //     }
+                // }
 
                 return result
             })
         }
 
-        get frameSetKey(): string {
-            return this.setKey
-        }
-
-        set frameSetKey(value: string) {
-            this.setKey = value
-            this.frameIndex = 0
-            this.done = false
-        }        
-    
         get frameSet(): Frame[] {
             return this.sets[this.setKey]
         }
@@ -102,17 +91,31 @@ namespace frames {
                         }
                     }
 
-                    const nextFrame = this.frame
-                    if(nextFrame.faceRight != faceRight) {
-                        nextFrame.image.flipX()
-                        nextFrame.faceRight = faceRight
-                    }
-                    sprite.setImage(nextFrame.image)
-
-                    sprite.vx = faceRight ? nextFrame.vx : -nextFrame.vx
-                    sprite.vy = nextFrame.vy
+                    this.setFrame(sprite, faceRight)
                 }
             }
+        }
+
+        setFrameSet(key: string, sprite: Sprite, faceRight: boolean) {
+            if (this.setKey != key) {
+                this.setKey = key
+                this.frameIndex = 0
+                this.done = false
+                this.timer.elapsed = 0
+                this.setFrame(sprite, faceRight)
+            }
+        }
+
+        setFrame(sprite: Sprite, faceRight: boolean) {
+            const nextFrame = this.frame
+            if (nextFrame.faceRight != faceRight) {
+                nextFrame.image.flipX()
+                nextFrame.faceRight = faceRight
+            }
+            sprite.setImage(nextFrame.image)
+
+            sprite.vx = faceRight ? nextFrame.vx : -nextFrame.vx
+            sprite.vy = nextFrame.vy
         }
     }
 
