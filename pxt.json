@@ -9,7 +9,13 @@
         "README.md",
         "assets.json",
         "images.g.jres",
-        "images.g.ts"
+        "images.g.ts",
+        "data-lyndsay.ts",
+        "inputs.ts",
+        "collisions.ts",
+        "fighters.ts",
+        "frames.ts",
+        "timers.ts"
     ],
     "testFiles": [
         "test.ts"
