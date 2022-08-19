@@ -1,12 +1,5 @@
 namespace frames {
 
-    const FrameParamsKeys = [
-        'duration',
-        'loop',
-        'vx',
-        'vy'
-    ]
-
     type FrameParams = {
         duration?: number
         loop?: boolean
@@ -44,22 +37,16 @@ namespace frames {
 
         addFrameSet(key: string, animation: Image[], data: FrameParams[]): void {
             this.sets[key] = animation.map((image, index) => {
+                const params = data[index]
                 const result: Frame = {
                     image,
                     faceRight: false,
 
-                    duration: 200,
-                    loop: true,
-                    vx: 0,
-                    vy: 0,
+                    duration: params.duration ? params.duration : 200,
+                    loop: params.loop ? params.loop : false,
+                    vx: params.vx ? params.vx : 0,
+                    vy: params.vy ? params.vy : 0,
                 }
-
-                // // hard coding object keys to get around a destructuring bug
-                // for(const key of FrameParamsKeys) {
-                //     if(data[index][key]) {
-                //         result[key] = data[index][key]
-                //     }
-                // }
 
                 return result
             })
