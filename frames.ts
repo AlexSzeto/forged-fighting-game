@@ -15,7 +15,14 @@ namespace frames {
         // damage: number    
     }
 
-    type Frame = FrameParams & {
+    type Frame = {
+        duration: number
+        loop: boolean
+
+        vx: number
+        vy: number
+        motion: boolean
+
         image: Image
         faceRight: boolean
     }
@@ -25,14 +32,14 @@ namespace frames {
     export class FrameData {
         private sets: FrameSet
         private _setKey: string
+        private _done: boolean
         private frameIndex: number
-        private done: boolean
         private timer: timers.Timer
 
         constructor() {
             this.sets = {}
             this.frameIndex = 0
-            this.done = false
+            this._done = false
             this.timer = new timers.Timer()
         }
 
@@ -47,7 +54,9 @@ namespace frames {
                     loop: params.loop ? params.loop : false,
                     vx: params.vx ? params.vx : 0,
                     vy: params.vy ? params.vy : 0,
-                    motion: params.motion ? true : (params.vx ? true : false) || (params.vy ? true : false),
+                    motion: (params.motion !== undefined)
+                        ? params.motion
+                        : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),
                 }
 
                 return result
@@ -58,13 +67,17 @@ namespace frames {
             return this._setKey
         }
 
+        get done(): boolean {
+            return this._done
+        }
+
         private get frame(): Frame {
             return this.sets[this._setKey][this.frameIndex]
         }
 
         update(sprite: Sprite, faceRight: boolean) {
             this.timer.update()
-            if(!this.done) {
+            if(!this._done) {
                 const currentSet = this.sets[this._setKey]
                 const currentFrame = this.frame
                 if(this.timer.elapsed >= currentFrame.duration) {
@@ -76,7 +89,7 @@ namespace frames {
                             this.frameIndex = 0
                         } else {
                             this.frameIndex = currentSet.length - 1
-                            this.done = true
+                            this._done = true
                         }
                     }
 
@@ -87,10 +100,9 @@ namespace frames {
 
         setFrameSet(key: string, sprite: Sprite, faceRight: boolean) {
             if (this._setKey != key) {
-                console.log('set ' + key)
                 this._setKey = key
                 this.frameIndex = 0
-                this.done = false
+                this._done = false
                 this.timer.elapsed = 0
                 this.setFrame(sprite, faceRight)
             }

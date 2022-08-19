@@ -4,8 +4,37 @@ const LYNDSAY_DATA: fighters.FighterData = {
 
 LYNDSAY_DATA.frameData.addFrameSet('idle', assets.animation`lyndsay-idle`, [
     {
-        motion: true,
         loop: true,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('punch', assets.animation`lyndsay-punch`, [
+    {        
+        duration: 300
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('kick', assets.animation`lyndsay-kick`, [
+    {
+        duration: 300
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('crouch', assets.animation`lyndsay-crouch`, [
+    {
+        loop: true
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('crouch-punch', assets.animation`lyndsay-crouch-punch`, [
+    {
+        duration: 300,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('crouch-kick', assets.animation`lyndsay-crouch-kick`, [
+    {
+        duration: 300,
     }
 ])
 
@@ -32,6 +61,20 @@ LYNDSAY_DATA.frameData.addFrameSet('walk-back', assets.animation`lyndsay-walk`, 
     },
     {
         loop: true,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('jump-punch', assets.animation`lyndsay-jump-punch`, [
+    {
+        duration: 3000,
+        motion: false,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('jump-kick', assets.animation`lyndsay-jump-kick`, [
+    {
+        duration: 3000,
+        motion: false,
     }
 ])
 

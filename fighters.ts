@@ -12,7 +12,7 @@ namespace fighters {
         JumpKick,
     }
 
-    const NEUTRAL_STATES: State[] = [State.Idle, State.Walk]
+    const NEUTRAL_STATES: State[] = [State.Idle, State.Walk, State.Crouch]
 
     export type FighterData = {
         frameData: frames.FrameData
@@ -54,8 +54,15 @@ namespace fighters {
             let nextState = this.state
             let nextSetKey = this.frameData.setKey
 
+            if(this.frameData.done) {
+                nextState = State.Idle
+                nextSetKey = 'idle'
+            }
+
             switch (nextState) {
                 case State.Jump:
+                case State.JumpPunch:
+                case State.JumpKick:
                     if (this.sprite.y >= 96) {
                         this.sprite.vx = 0
                         this.sprite.vy = 0
@@ -66,8 +73,50 @@ namespace fighters {
             }
 
             // parse input
+            if (this.input.punch) {
+                switch (nextState) {
+                    case State.Idle:
+                    case State.Walk:
+                        nextState = State.Punch
+                        nextSetKey = 'punch'
+                        break
+                    case State.Crouch:
+                        nextState = State.CrouchPunch
+                        nextSetKey = 'crouch-punch'
+                        break
+                    case State.Jump:
+                        nextState = State.JumpPunch
+                        nextSetKey = 'jump-punch'
+                        break
+                }
+            }
+
+            if (this.input.kick) {
+                switch (nextState) {
+                    case State.Idle:
+                    case State.Walk:
+                        nextState = State.Kick
+                        nextSetKey = 'kick'
+                        break
+                    case State.Crouch:
+                        nextState = State.CrouchPunch
+                        nextSetKey = 'crouch-kick'
+                        break
+                    case State.Jump:
+                        nextState = State.JumpPunch
+                        nextSetKey = 'jump-kick'
+                        break
+                }
+            }
+
             if (NEUTRAL_STATES.indexOf(nextState) >= 0) {
                 switch (this.input.stick) {
+                    case inputs.StickState.Down:
+                    case inputs.StickState.DownForward:
+                    case inputs.StickState.DownBack:
+                        nextState = State.Crouch
+                        nextSetKey = 'crouch'
+                        break
                     case inputs.StickState.Forward:
                         nextState = State.Walk
                         nextSetKey = 'walk-forward'
