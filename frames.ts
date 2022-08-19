@@ -6,6 +6,7 @@ namespace frames {
 
         vx?: number
         vy?: number
+        motion?: boolean
 
         // hitbox: CollisionBox
         // hurtbox: CollisionBox
@@ -23,7 +24,7 @@ namespace frames {
 
     export class FrameData {
         private sets: FrameSet
-        private setKey: string
+        private _setKey: string
         private frameIndex: number
         private done: boolean
         private timer: timers.Timer
@@ -46,24 +47,25 @@ namespace frames {
                     loop: params.loop ? params.loop : false,
                     vx: params.vx ? params.vx : 0,
                     vy: params.vy ? params.vy : 0,
+                    motion: params.motion ? true : (params.vx ? true : false) || (params.vy ? true : false),
                 }
 
                 return result
             })
         }
 
-        get frameSet(): Frame[] {
-            return this.sets[this.setKey]
+        get setKey(): string {
+            return this._setKey
         }
 
-        get frame(): Frame {
-            return this.sets[this.setKey][this.frameIndex]
+        private get frame(): Frame {
+            return this.sets[this._setKey][this.frameIndex]
         }
 
         update(sprite: Sprite, faceRight: boolean) {
             this.timer.update()
             if(!this.done) {
-                const currentSet = this.frameSet
+                const currentSet = this.sets[this._setKey]
                 const currentFrame = this.frame
                 if(this.timer.elapsed >= currentFrame.duration) {
                     this.timer.elapsed -= currentFrame.duration
@@ -84,8 +86,9 @@ namespace frames {
         }
 
         setFrameSet(key: string, sprite: Sprite, faceRight: boolean) {
-            if (this.setKey != key) {
-                this.setKey = key
+            if (this._setKey != key) {
+                console.log('set ' + key)
+                this._setKey = key
                 this.frameIndex = 0
                 this.done = false
                 this.timer.elapsed = 0
@@ -101,8 +104,10 @@ namespace frames {
             }
             sprite.setImage(nextFrame.image)
 
-            sprite.vx = faceRight ? nextFrame.vx : -nextFrame.vx
-            sprite.vy = nextFrame.vy
+            if(nextFrame.motion) {
+                sprite.vx = (faceRight ? nextFrame.vx : -nextFrame.vx) * sprite.scale
+                sprite.vy = nextFrame.vy * sprite.scale
+            }
         }
     }
 

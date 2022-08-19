@@ -36,7 +36,8 @@ namespace fighters {
 
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
             this.sprite.setFlag(SpriteFlag.StayInScreen, true)
-            this.sprite.ay = 400
+            this.sprite.scale = 1.3
+            this.sprite.ay = 400 * this.sprite.scale
 
             if (spawnAs1P) {
                 this.sprite.x = 40
@@ -46,19 +47,20 @@ namespace fighters {
 
             this.frameData.setFrameSet('idle', this.sprite, this.faceRight)
         }
-
+        
         update(): void {
             this.input.update(this.faceRight)
             
             let nextState = this.state
-            let nextSetKey = ''
+            let nextSetKey = this.frameData.setKey
 
             switch (nextState) {
                 case State.Jump:
-                    if (this.sprite.y >= 100) {
+                    if (this.sprite.y >= 96) {
                         this.sprite.vx = 0
                         this.sprite.vy = 0
                         nextState = State.Idle
+                        nextSetKey = 'idle'
                     }
                     break
             }
@@ -74,6 +76,18 @@ namespace fighters {
                         nextState = State.Walk
                         nextSetKey = 'walk-back'
                         break
+                    case inputs.StickState.UpBack:
+                        nextState = State.Jump
+                        nextSetKey = 'jump-back'
+                        break
+                    case inputs.StickState.Up:
+                        nextState = State.Jump
+                        nextSetKey = 'jump-up'
+                        break
+                    case inputs.StickState.UpForward:
+                        nextState = State.Jump
+                        nextSetKey = 'jump-forward'
+                        break
                     case inputs.StickState.Neutral:
                         nextState = State.Idle
                         nextSetKey = 'idle'
@@ -82,7 +96,7 @@ namespace fighters {
             }
 
             // switch frame set
-            if (this.state != nextState) {
+            if (this.frameData.setKey != nextSetKey) {
                 this.state = nextState
                 this.frameData.setFrameSet(nextSetKey, this.sprite, this.faceRight)
             }
