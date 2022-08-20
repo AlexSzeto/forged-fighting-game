@@ -72,6 +72,11 @@ namespace frames {
         }
 
         private get frame(): Frame {
+            if(!this.sets[this._setKey]) {
+                console.log(`set not found: <${this._setKey}>`)                
+            } else if(this.frameIndex >= this.sets[this._setKey].length) {
+                console.log(`frame ${this.frameIndex} not in set ${this.setKey}`)
+            }
             return this.sets[this._setKey][this.frameIndex]
         }
 
@@ -104,6 +109,9 @@ namespace frames {
                 this.frameIndex = 0
                 this._done = false
                 this.timer.elapsed = 0
+                if(sprite == null) {
+                    console.log('no sprite?')
+                }
                 this.setFrame(sprite, faceRight)
             }
         }

@@ -10,26 +10,55 @@ namespace fighters {
         Jump,
         JumpPunch,
         JumpKick,
+        SpecialMove
     }
 
     const NEUTRAL_STATES: State[] = [State.Idle, State.Walk, State.Crouch]
 
     export type FighterData = {
         frameData: frames.FrameData
+        specials: SpecialMoveData[]
+    }
+
+    export type SpecialMoveSharedData = {
+        frameSetKey: string,
+        ground: boolean,
+        air: boolean
+    }
+
+    export type SpecialMoveData = SpecialMoveSharedData & {
+        motionInput: string
+    }
+
+    export type SpecialMoveTracker = SpecialMoveSharedData & {
+        motion: inputs.MotionInput
     }
 
     export class Fighter {
         sprite: Sprite
         frameData: frames.FrameData
+        groundPlane: number = -1
+        gravity: number = 0
 
         input: inputs.Input
+        specials: SpecialMoveTracker[] = []
 
-        state: State
+        state: State = State.Idle
         faceRight: boolean
+        airborne: boolean
 
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
             this.frameData = data.frameData
             this.input = input
+
+            for(const specialMove of data.specials) {
+                this.specials.push({
+                    frameSetKey: specialMove.frameSetKey,
+                    ground: specialMove.ground,
+                    air: specialMove.air,
+                    motion: new inputs.MotionInput(specialMove.motionInput),
+                })
+            }
 
             this.state = State.Idle
             this.faceRight = spawnAs1P
@@ -37,7 +66,7 @@ namespace fighters {
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
             this.sprite.setFlag(SpriteFlag.StayInScreen, true)
             this.sprite.scale = 1.3
-            this.sprite.ay = 400 * this.sprite.scale
+            this.gravity = 400 * this.sprite.scale
 
             if (spawnAs1P) {
                 this.sprite.x = 40
@@ -49,6 +78,10 @@ namespace fighters {
         }
         
         update(): void {
+            if(this.groundPlane < 0) {
+                this.groundPlane = this.sprite.y
+            }
+
             this.input.update(this.faceRight)
             
             let nextState = this.state
@@ -59,17 +92,33 @@ namespace fighters {
                 nextSetKey = 'idle'
             }
 
-            switch (nextState) {
-                case State.Jump:
-                case State.JumpPunch:
-                case State.JumpKick:
-                    if (this.sprite.y >= 96) {
-                        this.sprite.vx = 0
-                        this.sprite.vy = 0
-                        nextState = State.Idle
-                        nextSetKey = 'idle'
-                    }
-                    break
+            if (this.airborne && this.sprite.y >= this.groundPlane) {
+                this.airborne = false
+                this.sprite.vx = 0
+                this.sprite.vy = 0
+                this.sprite.ay = 0
+                this.sprite.y = this.groundPlane
+                nextState = State.Idle
+                nextSetKey = 'idle'
+            }
+
+            if(this.sprite.y < this.groundPlane) {
+                this.airborne = true
+                this.sprite.ay = this.gravity
+            }
+
+            for(const specialMove of this.specials) {
+                specialMove.motion.update(this.input)
+                if(
+                    specialMove.motion.execute
+                    && (
+                        (this.airborne && specialMove.air)
+                        || (!this.airborne && specialMove.ground)
+                    )
+                ) {
+                    nextState = State.SpecialMove
+                    nextSetKey = specialMove.frameSetKey
+                }
             }
 
             // parse input

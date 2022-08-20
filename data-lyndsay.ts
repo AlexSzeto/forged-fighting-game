@@ -1,5 +1,13 @@
 const LYNDSAY_DATA: fighters.FighterData = {
-    frameData: new frames.FrameData()
+    frameData: new frames.FrameData(),
+    specials: [
+        {
+            frameSetKey: 'special-fireball',
+            ground: true,
+            air: false,
+            motionInput: 'CB,F,P'
+        }
+    ]
 }
 
 LYNDSAY_DATA.frameData.addFrameSet('idle', assets.animation`lyndsay-idle`, [
@@ -116,5 +124,17 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-back', assets.animation`lyndsay-jump`, 
     },
     {
         duration: 3000,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('special-fireball', assets.animation`lyndsay-fireball`, [
+    {
+        duration: 200,
+    },
+    {
+        duration: 300,
+    },
+    {
+        duration: 100,
     }
 ])
