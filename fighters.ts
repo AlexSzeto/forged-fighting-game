@@ -34,8 +34,12 @@ namespace fighters {
         motion: inputs.MotionInput
     }
 
-    export class Fighter {
+    export class Fighter implements frames.FrameControlledSprite{
         sprite: Sprite
+        faceRight: boolean
+        ox: number = 0
+        oy: number = 0
+
         frameData: frames.FrameData
         groundPlane: number = -1
         gravity: number = 0
@@ -44,7 +48,6 @@ namespace fighters {
         specials: SpecialMoveTracker[] = []
 
         state: State = State.Idle
-        faceRight: boolean
         airborne: boolean
 
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
@@ -74,7 +77,7 @@ namespace fighters {
                 this.sprite.x = 100
             }
 
-            this.frameData.setFrameSet('idle', this.sprite, this.faceRight)
+            this.frameData.setFrameSet('idle', this)
         }
         
         update(): void {
@@ -196,10 +199,47 @@ namespace fighters {
             // switch frame set
             if (this.frameData.setKey != nextSetKey) {
                 this.state = nextState
-                this.frameData.setFrameSet(nextSetKey, this.sprite, this.faceRight)
+                this.frameData.setFrameSet(nextSetKey, this)
+
             }
 
-            this.frameData.update(this.sprite, this.faceRight)
+            this.frameData.update(this)
+            const create = this.frameData.create
+            if (create) {
+                const projectile = new Projectile(create, this)
+            }
+
         }
     }
+
+    export const projectileList: Projectile[] = []
+    export class Projectile implements frames.FrameControlledSprite {
+        sprite: Sprite
+        faceRight: boolean
+        ox: number = 0
+        oy: number = 0
+
+        constructor(
+            private frameData: frames.FrameData,
+            private createdBy: Fighter
+        ) {
+            this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
+            projectileList.push(this)
+            this.sprite.setFlag(SpriteFlag.AutoDestroy, true)
+            this.sprite.x = this.createdBy.sprite.x
+            this.sprite.y = this.createdBy.sprite.y
+            this.sprite.scale = 1.3
+            this.faceRight = this.createdBy.faceRight
+
+            this.frameData.setFrameSet('animation', this)
+        }
+
+        update(): void {
+            this.frameData.update(this)
+        }
+    }
+
+    sprites.onDestroyed(SpriteKind.Projectile, sprite => {
+        projectileList.removeElement(projectileList.find(projectile => projectile.sprite == sprite))
+    })
 }

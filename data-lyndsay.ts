@@ -1,3 +1,19 @@
+const LYNDSAY_FIREBALL = new frames.FrameData()
+
+LYNDSAY_FIREBALL.addFrameSet('animation', assets.animation`projectile-fireball`, [
+    {
+        ox: 10,
+        vx: 100,
+        duration: 150,
+    },
+    {
+        ox: 10,
+        duration: 150,
+        loop: true
+    }
+
+])
+
 const LYNDSAY_DATA: fighters.FighterData = {
     frameData: new frames.FrameData(),
     specials: [
@@ -5,7 +21,13 @@ const LYNDSAY_DATA: fighters.FighterData = {
             frameSetKey: 'special-fireball',
             ground: true,
             air: false,
-            motionInput: 'CB,F,P'
+            motionInput: 'F,DF,D,DF,P'
+        },
+        {
+            frameSetKey: 'special-fireball',
+            ground: false,
+            air: true,
+            motionInput: 'D,DF,F,P'
         }
     ]
 }
@@ -133,6 +155,7 @@ LYNDSAY_DATA.frameData.addFrameSet('special-fireball', assets.animation`lyndsay-
     },
     {
         duration: 300,
+        create: LYNDSAY_FIREBALL,
     },
     {
         duration: 100,

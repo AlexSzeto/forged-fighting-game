@@ -1,12 +1,19 @@
 namespace frames {
 
     type FrameParams = {
+        frameIndex?: number
+
         duration?: number
         loop?: boolean
+
+        ox?: number
+        oy?: number
 
         vx?: number
         vy?: number
         motion?: boolean
+
+        create?: FrameData
 
         // hitbox: CollisionBox
         // hurtbox: CollisionBox
@@ -19,9 +26,14 @@ namespace frames {
         duration: number
         loop: boolean
 
+        ox: number
+        oy: number
+
         vx: number
         vy: number
         motion: boolean
+
+        create: FrameData
 
         image: Image
         faceRight: boolean
@@ -29,10 +41,18 @@ namespace frames {
 
     type FrameSet = { [key: string]: Frame[] }
 
+    export interface FrameControlledSprite {
+        sprite: Sprite
+        faceRight: boolean
+        ox: number
+        oy: number
+    }
+
     export class FrameData {
         private sets: FrameSet
         private _setKey: string
         private _done: boolean
+        private _create: FrameData
         private frameIndex: number
         private timer: timers.Timer
 
@@ -44,16 +64,19 @@ namespace frames {
         }
 
         addFrameSet(key: string, animation: Image[], data: FrameParams[]): void {
-            this.sets[key] = animation.map((image, index) => {
-                const params = data[index]
+            this.sets[key] = data.map((params, index) => {
+                const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
                     image,
                     faceRight: false,
 
                     duration: params.duration ? params.duration : 200,
                     loop: params.loop ? params.loop : false,
+                    ox: params.ox ? params.ox : 0,
+                    oy: params.oy ? params.oy : 0,
                     vx: params.vx ? params.vx : 0,
                     vy: params.vy ? params.vy : 0,
+                    create: params.create ? params.create : null,
                     motion: (params.motion !== undefined)
                         ? params.motion
                         : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),
@@ -71,7 +94,11 @@ namespace frames {
             return this._done
         }
 
-        private get frame(): Frame {
+        get create(): FrameData {
+            return this._create
+        }
+
+        get frame(): Frame {
             if(!this.sets[this._setKey]) {
                 console.log(`set not found: <${this._setKey}>`)                
             } else if(this.frameIndex >= this.sets[this._setKey].length) {
@@ -80,7 +107,8 @@ namespace frames {
             return this.sets[this._setKey][this.frameIndex]
         }
 
-        update(sprite: Sprite, faceRight: boolean) {
+        update(target: FrameControlledSprite) {
+            this._create = null
             this.timer.update()
             if(!this._done) {
                 const currentSet = this.sets[this._setKey]
@@ -98,35 +126,47 @@ namespace frames {
                         }
                     }
 
-                    this.setFrame(sprite, faceRight)
+                    this.setFrame(target)
                 }
             }
         }
 
-        setFrameSet(key: string, sprite: Sprite, faceRight: boolean) {
+        setFrameSet(key: string, target: FrameControlledSprite) {
             if (this._setKey != key) {
                 this._setKey = key
                 this.frameIndex = 0
                 this._done = false
                 this.timer.elapsed = 0
-                if(sprite == null) {
+                if(target.sprite == null) {
                     console.log('no sprite?')
                 }
-                this.setFrame(sprite, faceRight)
+                this.setFrame(target)
             }
         }
 
-        setFrame(sprite: Sprite, faceRight: boolean) {
+        setFrame(target: FrameControlledSprite) {
             const nextFrame = this.frame
-            if (nextFrame.faceRight != faceRight) {
-                nextFrame.image.flipX()
-                nextFrame.faceRight = faceRight
+
+            if(nextFrame.create) {
+                this._create = nextFrame.create
             }
-            sprite.setImage(nextFrame.image)
+
+            if (nextFrame.faceRight != target.faceRight) {
+                nextFrame.image.flipX()
+                nextFrame.faceRight = target.faceRight
+            }
+            target.sprite.setImage(nextFrame.image)
+
+            target.sprite.x -= target.ox
+            target.sprite.y -= target.oy
+            target.ox = (target.faceRight ? nextFrame.ox : -nextFrame.ox) * target.sprite.scale
+            target.oy = nextFrame.oy * target.sprite.scale
+            target.sprite.x += target.ox
+            target.sprite.y += target.oy
 
             if(nextFrame.motion) {
-                sprite.vx = (faceRight ? nextFrame.vx : -nextFrame.vx) * sprite.scale
-                sprite.vy = nextFrame.vy * sprite.scale
+                target.sprite.vx = (target.faceRight ? nextFrame.vx : -nextFrame.vx) * target.sprite.scale
+                target.sprite.vy = nextFrame.vy * target.sprite.scale
             }
         }
     }
