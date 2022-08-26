@@ -15,8 +15,8 @@ namespace frames {
 
         create?: FrameData
 
-        // hitbox: CollisionBox
-        // hurtbox: CollisionBox
+        hitbox?: collisions.CollisionBox
+        hurtbox?: collisions.CollisionBox
 
         // invincible: boolean
         // damage: number    
@@ -33,6 +33,9 @@ namespace frames {
         vy: number
         motion: boolean
 
+        hitbox: collisions.CollisionBox
+        hurtbox: collisions.CollisionBox
+
         create: FrameData
 
         image: Image
@@ -40,6 +43,12 @@ namespace frames {
     }
 
     type FrameSet = { [key: string]: Frame[] }
+    type InsertFrameSetData = {
+        key: string
+        animation: Image[]
+        data: FrameParams[]
+        projectileDefaults: boolean
+    }
 
     export interface FrameControlledSprite {
         sprite: Sprite
@@ -56,6 +65,8 @@ namespace frames {
         private frameIndex: number
         private timer: timers.Timer
 
+        private setInsertData: InsertFrameSetData[] = []
+
         constructor() {
             this.sets = {}
             this.frameIndex = 0
@@ -63,11 +74,26 @@ namespace frames {
             this.timer = new timers.Timer()
         }
 
-        addFrameSet(key: string, animation: Image[], data: FrameParams[]): void {
+        clone(): FrameData {
+            const result = new FrameData()
+            for(const data of this.setInsertData) {
+                result.addFrameSet(data.key, data.animation, data.data, data.projectileDefaults)
+            }
+            return result
+        }
+
+        addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false): void {
+            this.setInsertData.push({
+                key,
+                animation,
+                data,
+                projectileDefaults
+            })
+
             this.sets[key] = data.map((params, index) => {
                 const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
-                    image,
+                    image: image.clone(),
                     faceRight: false,
 
                     duration: params.duration ? params.duration : 200,
@@ -76,6 +102,14 @@ namespace frames {
                     oy: params.oy ? params.oy : 0,
                     vx: params.vx ? params.vx : 0,
                     vy: params.vy ? params.vy : 0,
+
+                    hitbox: params.hitbox
+                        ? params.hitbox
+                        : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
+                    hurtbox: params.hurtbox
+                        ? params.hurtbox
+                        : (projectileDefaults ? null : new collisions.CollisionBox(0, 0, image.width, image.height)),
+                    
                     create: params.create ? params.create : null,
                     motion: (params.motion !== undefined)
                         ? params.motion

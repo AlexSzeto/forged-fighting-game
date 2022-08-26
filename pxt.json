@@ -15,7 +15,8 @@
         "collisions.ts",
         "fighters.ts",
         "frames.ts",
-        "timers.ts"
+        "timers.ts",
+        "ai.ts"
     ],
     "testFiles": [
         "test.ts"

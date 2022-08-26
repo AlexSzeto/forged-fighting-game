@@ -35,6 +35,8 @@ namespace fighters {
     }
 
     export class Fighter implements frames.FrameControlledSprite{
+        opponent: Fighter
+        
         sprite: Sprite
         faceRight: boolean
         ox: number = 0
@@ -51,7 +53,7 @@ namespace fighters {
         airborne: boolean
 
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
-            this.frameData = data.frameData
+            this.frameData = data.frameData.clone()
             this.input = input
 
             for(const specialMove of data.specials) {
@@ -103,6 +105,16 @@ namespace fighters {
                 this.sprite.y = this.groundPlane
                 nextState = State.Idle
                 nextSetKey = 'idle'
+
+                if(
+                    (this.sprite.x > this.opponent.sprite.x && this.faceRight)
+                    || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
+                ) {
+                    this.faceRight = !this.faceRight
+                    this.frameData.setFrame(this)
+                    this.opponent.faceRight = !this.opponent.faceRight
+                    this.opponent.frameData.setFrame(this)
+                }
             }
 
             if(this.sprite.y < this.groundPlane) {

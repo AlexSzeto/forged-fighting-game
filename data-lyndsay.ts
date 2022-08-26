@@ -12,7 +12,7 @@ LYNDSAY_FIREBALL.addFrameSet('animation', assets.animation`projectile-fireball`,
         loop: true
     }
 
-])
+], true)
 
 const LYNDSAY_DATA: fighters.FighterData = {
     frameData: new frames.FrameData(),
