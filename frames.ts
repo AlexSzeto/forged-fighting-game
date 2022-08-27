@@ -1,42 +1,61 @@
 namespace frames {
+    export enum Stance {
+        Stand,
+        Crouched,
+        Airborne,
+    }
+
+    export enum Action {
+        Neutral,
+        Block,
+        Pain,
+        Attack,
+        Special,
+    }
 
     type FrameParams = {
         frameIndex?: number
 
+        // animation
         duration?: number
-        loop?: boolean
+        nextFrame?: number
 
+        // positioning
         ox?: number
         oy?: number
 
+        // motion
         vx?: number
         vy?: number
         motion?: boolean
+
+        // fight attributes
+        invincible?: boolean
+        stance?: Stance
+        action?: Action
+        damage?: number
 
         create?: FrameData
 
         hitbox?: collisions.CollisionBox
         hurtbox?: collisions.CollisionBox
-
-        // invincible: boolean
-        // damage: number    
     }
 
     type Frame = {
         duration: number
-        loop: boolean
-
+        nextFrame: number
         ox: number
         oy: number
-
         vx: number
         vy: number
         motion: boolean
-
+        invincible: boolean
+        stance: Stance
+        action: Action
+        damage: number
+        create: FrameData
         hitbox: collisions.CollisionBox
         hurtbox: collisions.CollisionBox
-
-        create: FrameData
 
         image: Image
         faceRight: boolean
@@ -90,6 +109,11 @@ namespace frames {
                 projectileDefaults
             })
 
+            const prevParams: FrameParams = {
+                action: Action.Neutral,
+                stance: Stance.Stand,
+            }
+
             this.sets[key] = data.map((params, index) => {
                 const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
@@ -97,7 +121,7 @@ namespace frames {
                     faceRight: false,
 
                     duration: params.duration ? params.duration : 200,
-                    loop: params.loop ? params.loop : false,
+                    nextFrame: params.nextFrame ? params.nextFrame : index + 1,
                     ox: params.ox ? params.ox : 0,
                     oy: params.oy ? params.oy : 0,
                     vx: params.vx ? params.vx : 0,
@@ -109,12 +133,19 @@ namespace frames {
                     hurtbox: params.hurtbox
                         ? params.hurtbox
                         : (projectileDefaults ? null : new collisions.CollisionBox(0, 0, image.width, image.height)),
-                    
+
+                    invincible: params.invincible ? params.invincible : false,
+                    stance: params.stance ? params.stance : prevParams.stance,
+                    action: params.action ? params.action : prevParams.action,
+                    damage: params.damage ? params.damage : 0,
                     create: params.create ? params.create : null,
                     motion: (params.motion !== undefined)
                         ? params.motion
                         : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),
                 }
+
+                prevParams.stance = result.stance
+                prevParams.action = result.action
 
                 return result
             })
@@ -149,15 +180,11 @@ namespace frames {
                 const currentFrame = this.frame
                 if(this.timer.elapsed >= currentFrame.duration) {
                     this.timer.elapsed -= currentFrame.duration
-                    this.frameIndex++
 
-                    if(this.frameIndex >= currentSet.length) {
-                        if(currentFrame.loop) {
-                            this.frameIndex = 0
-                        } else {
-                            this.frameIndex = currentSet.length - 1
-                            this._done = true
-                        }
+                    if (currentFrame.nextFrame < 0 || currentFrame.nextFrame >= currentSet.length) {
+                        this._done = true
+                    } else {
+                        this.frameIndex = currentFrame.nextFrame
                     }
 
                     this.setFrame(target)
@@ -165,16 +192,15 @@ namespace frames {
             }
         }
 
-        setFrameSet(key: string, target: FrameControlledSprite) {
+        setFrameSet(key: string, target: FrameControlledSprite = null) {
             if (this._setKey != key) {
                 this._setKey = key
                 this.frameIndex = 0
                 this._done = false
                 this.timer.elapsed = 0
-                if(target.sprite == null) {
-                    console.log('no sprite?')
+                if(target) {
+                    this.setFrame(target)
                 }
-                this.setFrame(target)
             }
         }
 

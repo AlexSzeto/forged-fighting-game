@@ -8,21 +8,10 @@ const box2 = new collisions.Rectangle()
 
 game.onUpdate(() => {
 
-    p1.frameData.frame.hurtbox.compute(p1, box1, 1.3)
-    p2.frameData.frame.hurtbox.compute(p2, box2, 1.3)
+    p1.processInput()
+    p2.processInput()
 
-    if(box1.collideWith(box2)) {
-        const overlap = ((box1.width + box2.width) / 2 - Math.abs(p1.sprite.x - p2.sprite.x)) / 2
-        if(p1.sprite.x > p2.sprite.x) {
-            p1.sprite.x += overlap
-            p2.sprite.x -= overlap
-        } else {
-            p1.sprite.x -= overlap
-            p2.sprite.x += overlap
-        }
-    }
-    p1.update()
-    p2.update()
+    fighters.processBumps(p1, p2)
 
     for(const projectile of fighters.projectileList) {
         projectile.update()
