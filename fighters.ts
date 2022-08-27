@@ -70,6 +70,12 @@ namespace fighters {
             this.frameData.setFrameSet('idle', this)
         }
         
+        get airborne(): boolean { return this.frameData.frame.stance == frames.Stance.Airborne }
+        get action(): frames.Action { return this.frameData.frame.action }
+        get stance(): frames.Stance { return this.frameData.frame.stance }
+        get neutral(): boolean { return this.frameData.frame.action == frames.Action.Neutral }
+        get groundedNeutral(): boolean { return this.neutral && !this.airborne }
+
         processInput(): void {
             if(this.groundPlane < 0) {
                 this.groundPlane = this.sprite.y
@@ -78,10 +84,6 @@ namespace fighters {
             this.input.update(this.faceRight)
 
             const prevKey = this.frameData.setKey
-            const airborne = () => this.frameData.frame.stance == frames.Stance.Airborne
-            const action = () => this.frameData.frame.action
-            const stance = () => this.frameData.frame.stance
-            const neutral = () => this.frameData.frame.action == frames.Action.Neutral
 
             // FRAME SET RESET
             if(this.frameData.done) {
@@ -89,7 +91,7 @@ namespace fighters {
             }
 
             // START AIRBORNE MANAGEMENT
-            if (airborne() && this.sprite.vy > 0 && this.sprite.y >= this.groundPlane) {
+            if (this.airborne && this.sprite.vy > 0 && this.sprite.y >= this.groundPlane) {
                 this.sprite.vx = 0
                 this.sprite.vy = 0
                 this.sprite.ay = 0
@@ -116,9 +118,10 @@ namespace fighters {
                 specialMove.motion.update(this.input)
                 if(
                     specialMove.motion.execute
+                    && this.neutral
                     && (
-                        (airborne() && specialMove.air)
-                        || (!airborne() && specialMove.ground)
+                        (this.airborne && specialMove.air)
+                        || (!this.airborne && specialMove.ground)
                     )
                 ) {
                     this.frameData.setFrameSet(specialMove.frameSetKey)
@@ -126,39 +129,27 @@ namespace fighters {
             }
 
             // parse input
-            if (this.input.punch) {
-                if(neutral()) {
-                    switch(stance()) {
-                        case frames.Stance.Stand:
-                            this.frameData.setFrameSet('punch')
-                            break
-                        case frames.Stance.Crouched:
-                            this.frameData.setFrameSet('crouch-punch')
-                            break
-                        case frames.Stance.Airborne:
-                            this.frameData.setFrameSet('jump-punch')
-                            break
+            const processNormals = (hasInput: boolean, frameSetId: string) => {
+                if(hasInput) {
+                    if(this.neutral) {
+                        switch (this.stance) {
+                            case frames.Stance.Stand:
+                                this.frameData.setFrameSet(frameSetId)
+                                break
+                            case frames.Stance.Crouched:
+                                this.frameData.setFrameSet(`crouch-${frameSetId}`)
+                                break
+                            case frames.Stance.Airborne:
+                                this.frameData.setFrameSet(`jump-${frameSetId}`)
+                                break
+                        }
                     }
                 }
             }
+            processNormals(this.input.punch, 'punch')
+            processNormals(this.input.kick, 'kick')
 
-            if (this.input.kick) {
-                if (neutral()) {
-                    switch (stance()) {
-                        case frames.Stance.Stand:
-                            this.frameData.setFrameSet('kick')
-                            break
-                        case frames.Stance.Crouched:
-                            this.frameData.setFrameSet('crouch-kick')
-                            break
-                        case frames.Stance.Airborne:
-                            this.frameData.setFrameSet('jump-kick')
-                            break
-                    }
-                }
-            }
-
-            if (neutral() && !airborne()) {
+            if (this.groundedNeutral) {
                 switch (this.input.stick) {
                     case inputs.StickState.Down:
                     case inputs.StickState.DownForward:
@@ -194,7 +185,8 @@ namespace fighters {
             this.frameData.update(this)
             const create = this.frameData.create
             if (create) {
-                const projectile = new Projectile(create, this)
+                console.log('create ' + game.runtime())
+                const projectile = new Projectile(create.clone(), this)
             }
 
         }
@@ -216,7 +208,6 @@ namespace fighters {
             this.sprite.setFlag(SpriteFlag.AutoDestroy, true)
             this.sprite.x = this.createdBy.sprite.x
             this.sprite.y = this.createdBy.sprite.y
-            this.sprite.scale = 1.3
             this.faceRight = this.createdBy.faceRight
 
             this.frameData.setFrameSet('animation', this)
@@ -224,6 +215,7 @@ namespace fighters {
 
         update(): void {
             this.frameData.update(this)
+            console.log(this.frameData.frame.nextFrame)
         }
     }
 
@@ -236,9 +228,7 @@ namespace fighters {
         bumpBox.compute(p1, p1.box)
         bumpBox.compute(p2, p2.box)
 
-        console.log(p1.box.x + "," + p1.box.y)
         if (p1.box.collideWith(p2.box)) {
-            console.log('bump')
             const overlap = ((p1.box.width + p2.box.width) / 2 - Math.abs(p1.sprite.x - p2.sprite.x)) / 2
             if (p1.sprite.x > p2.sprite.x) {
                 p1.sprite.x += overlap

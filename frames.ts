@@ -96,18 +96,20 @@ namespace frames {
         clone(): FrameData {
             const result = new FrameData()
             for(const data of this.setInsertData) {
-                result.addFrameSet(data.key, data.animation, data.data, data.projectileDefaults)
+                result.addFrameSet(data.key, data.animation, data.data, data.projectileDefaults, true)
             }
             return result
         }
 
-        addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false): void {
-            this.setInsertData.push({
-                key,
-                animation,
-                data,
-                projectileDefaults
-            })
+        addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
+            if(!clone) {
+                this.setInsertData.push({
+                    key,
+                    animation,
+                    data,
+                    projectileDefaults
+                })
+            }
 
             const prevParams: FrameParams = {
                 action: Action.Neutral,
@@ -115,13 +117,16 @@ namespace frames {
             }
 
             this.sets[key] = data.map((params, index) => {
+                if(key == 'animation') {
+                    console.log(params)
+                }
                 const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
                     image: image.clone(),
                     faceRight: false,
 
                     duration: params.duration ? params.duration : 200,
-                    nextFrame: params.nextFrame ? params.nextFrame : index + 1,
+                    nextFrame: (params.nextFrame != null) ? params.nextFrame : index + 1,
                     ox: params.ox ? params.ox : 0,
                     oy: params.oy ? params.oy : 0,
                     vx: params.vx ? params.vx : 0,
