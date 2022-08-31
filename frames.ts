@@ -33,15 +33,17 @@ namespace frames {
         invincible?: boolean
         stance?: Stance
         action?: Action
-        damage?: number
 
         create?: FrameData
 
         hitbox?: collisions.CollisionBox
         hurtbox?: collisions.CollisionBox
+
+        damage?: number
+        knockdown?: boolean
     }
 
-    type Frame = {
+    export type Frame = {
         duration: number
         nextFrame: number
         ox: number
@@ -52,10 +54,11 @@ namespace frames {
         invincible: boolean
         stance: Stance
         action: Action
-        damage: number
         create: FrameData
         hitbox: collisions.CollisionBox
         hurtbox: collisions.CollisionBox
+        damage: number
+        knockdown: boolean
 
         image: Image
         faceRight: boolean
@@ -85,6 +88,8 @@ namespace frames {
         private timer: timers.Timer
 
         private setInsertData: InsertFrameSetData[] = []
+
+        hitDone: boolean = false
 
         constructor() {
             this.sets = {}
@@ -143,6 +148,7 @@ namespace frames {
                     stance: params.stance ? params.stance : prevParams.stance,
                     action: params.action ? params.action : prevParams.action,
                     damage: params.damage ? params.damage : 0,
+                    knockdown: params.knockdown ? params.knockdown : false,
                     create: params.create ? params.create : null,
                     motion: (params.motion !== undefined)
                         ? params.motion
@@ -202,6 +208,7 @@ namespace frames {
                 this._setKey = key
                 this.frameIndex = 0
                 this._done = false
+                this.hitDone = false
                 this.timer.elapsed = 0
                 if(target) {
                     this.setFrame(target)

@@ -7,6 +7,8 @@ const box1 = new collisions.Rectangle()
 const box2 = new collisions.Rectangle()
 
 game.onUpdate(() => {
+    
+    fighters.processHits(p1, p2)
 
     p1.processInput()
     p2.processInput()

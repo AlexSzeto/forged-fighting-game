@@ -91,25 +91,30 @@ namespace fighters {
             }
 
             // START AIRBORNE MANAGEMENT
-            if (this.airborne && this.sprite.vy > 0 && this.sprite.y >= this.groundPlane) {
-                this.sprite.vx = 0
-                this.sprite.vy = 0
-                this.sprite.ay = 0
-                this.sprite.y = this.groundPlane
-                this.frameData.setFrameSet('idle')
+            if (this.airborne && this.sprite.vy > 0 && this.sprite.y > this.groundPlane + this.oy) {
+                if(this.frameData.setKey == 'jump-wound') {
+                    this.frameData.setFrameSet('prone')
+                } else {
+                    this.sprite.ay = 0
+                    this.frameData.setFrameSet('idle')
 
-                if(
-                    (this.sprite.x > this.opponent.sprite.x && this.faceRight)
-                    || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
-                ) {
-                    this.faceRight = !this.faceRight
-                    this.frameData.setFrame(this)
-                    this.opponent.faceRight = !this.opponent.faceRight
-                    this.opponent.frameData.setFrame(this)
+                    if (
+                        (this.sprite.x > this.opponent.sprite.x && this.faceRight)
+                        || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
+                    ) {
+                        this.faceRight = !this.faceRight
+                        this.frameData.setFrame(this)
+                        this.opponent.faceRight = !this.opponent.faceRight
+                        this.opponent.frameData.setFrame(this)
+                    }
                 }
             }
 
-            if(this.sprite.y < this.groundPlane) {
+            if (this.sprite.y > this.groundPlane + this.oy) {
+                this.sprite.y = this.groundPlane + this.oy
+            }
+
+            if(this.sprite.y < this.groundPlane + this.oy) {
                 this.sprite.ay = this.gravity
             }
             // END AIRBORNE MANAGEMENT
@@ -241,19 +246,48 @@ namespace fighters {
     }
 
     export function processHits(p1: Fighter, p2: Fighter):void {
+        const p1Frame = p1.frameData.frame
+        const p2Frame = p2.frameData.frame
+
         const registerHit = (attacker: Fighter, defender: Fighter):boolean => {
-            if(attacker.frameData.frame.hitbox) {
+            if(!attacker.frameData.hitDone && attacker.frameData.frame.hitbox) {
                 attacker.frameData.frame.hitbox.compute(attacker, attacker.box)
                 defender.frameData.frame.hurtbox.compute(defender, defender.box)
-                return attacker.box.collideWith(defender.box)
-            } else {
-                return false
+                if(attacker.box.collideWith(defender.box)) {
+                    attacker.frameData.hitDone = true
+                    return true
+                }
             }
+            return false
         }
 
         const p2Hit = registerHit(p1, p2)
         const p1Hit = registerHit(p2, p1)
 
+        const resolveHit = (attackerFrame: frames.Frame, defender: Fighter) => {
+            if(attackerFrame.knockdown) {
+                defender.frameData.setFrameSet('jump-wound', defender)
+                return
+            }
+            switch (defender.frameData.frame.stance) {
+                case frames.Stance.Stand:
+                    defender.frameData.setFrameSet('stand-wound', defender)
+                    break
+                case frames.Stance.Crouched:
+                    defender.frameData.setFrameSet('crouch-wound', defender)
+                    break
+                case frames.Stance.Airborne:
+                    defender.frameData.setFrameSet('jump-wound', defender)
+                    break
+            }
+        }
+
+        if(p1Hit) {
+            resolveHit(p2Frame, p1)
+        }
+        if(p2Hit) {
+            resolveHit(p1Frame, p2)
+        }
     }
 
     export function processFlips(p1: Fighter, p2: Fighter): void {

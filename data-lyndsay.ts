@@ -61,6 +61,7 @@ LYNDSAY_DATA.frameData.addFrameSet('crouch-punch', assets.animation`lyndsay-crou
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Attack,
+        hitbox: new collisions.CollisionBox(15, 15, 10, 10),
 
         duration: 300,
     }
@@ -70,6 +71,8 @@ LYNDSAY_DATA.frameData.addFrameSet('crouch-kick', assets.animation`lyndsay-crouc
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Attack,
+        hitbox: new collisions.CollisionBox(15, 22, 10, 10),
+        knockdown: true,
 
         duration: 300,
     }
@@ -110,6 +113,7 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-punch', assets.animation`lyndsay-jump-p
 
         duration: 3000,
         motion: false,
+        hitbox: new collisions.CollisionBox(15, 15, 10, 10)
     }
 ])
 
@@ -120,6 +124,8 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-kick', assets.animation`lyndsay-jump-ki
 
         duration: 3000,
         motion: false,
+        hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+        knockdown: true
     }
 ])
 
@@ -170,28 +176,37 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-back', assets.animation`lyndsay-jump`, 
 LYNDSAY_DATA.frameData.addFrameSet('stand-wound', assets.animation`lyndsay-stand-wound`, [
     {
         action: frames.Action.Pain,
-    }, { duration: 400 }
+        vx: -20
+    }, { duration: 200 }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('crouch-wound', assets.animation`lyndsay-crouch-wound`, [
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Pain,
-    }, { duration: 400 }
+        vx: -20
+    }, { duration: 200 }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('jump-wound', assets.animation`lyndsay-jump-wound`, [
     { 
         stance: frames.Stance.Airborne,
         action: frames.Action.Pain,
-        duration: 3000
+        duration: 3000,
+        vx: -50,
+        vy: -50
     }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('prone', assets.animation`lyndsay-prone`, [
     {
+        oy: 8,
         action: frames.Action.Pain,
-    }, { duration: 400 }
+    }, 
+    {
+        oy: 8,
+        duration: 400 
+    }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('special-fireball', assets.animation`lyndsay-fireball`, [
