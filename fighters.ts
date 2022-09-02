@@ -72,6 +72,7 @@ namespace fighters {
         
         get airborne(): boolean { return this.frameData.frame.stance == frames.Stance.Airborne }
         get action(): frames.Action { return this.frameData.frame.action }
+        get attacking(): boolean { return this.action == frames.Action.Attack }
         get stance(): frames.Stance { return this.frameData.frame.stance }
         get neutral(): boolean { return this.frameData.frame.action == frames.Action.Neutral }
         get groundedNeutral(): boolean { return this.neutral && !this.airborne }
@@ -90,7 +91,7 @@ namespace fighters {
                 this.frameData.setFrameSet('idle')
             }
 
-            // START AIRBORNE MANAGEMENT
+            // START TEMP MANAGEMENT
             if (this.airborne && this.sprite.vy > 0 && this.sprite.y > this.groundPlane + this.oy) {
                 if(this.frameData.setKey == 'jump-wound') {
                     this.frameData.setFrameSet('prone')
@@ -117,7 +118,17 @@ namespace fighters {
             if(this.sprite.y < this.groundPlane + this.oy) {
                 this.sprite.ay = this.gravity
             }
-            // END AIRBORNE MANAGEMENT
+
+            if(
+                (this.action == frames.Action.Pain || this.action == frames.Action.Block)
+                && !this.airborne
+            ) {
+                this.sprite.fx = 40
+            } else {
+                this.sprite.fx = 0
+            }
+
+            // END TEMP MANAGEMENT
 
             for(const specialMove of this.specials) {
                 specialMove.motion.update(this.input)
@@ -151,21 +162,29 @@ namespace fighters {
                     }
                 }
             }
-            processNormals(this.input.punch, 'punch')
-            processNormals(this.input.kick, 'kick')
 
             if (this.groundedNeutral) {
                 switch (this.input.stick) {
                     case inputs.StickState.Down:
                     case inputs.StickState.DownForward:
-                    case inputs.StickState.DownBack:
                         this.frameData.setFrameSet('crouch')
+                        break
+                    case inputs.StickState.DownBack:
+                        if (this.opponent.attacking) {
+                            this.frameData.setFrameSet('crouch-block')
+                        } else {
+                            this.frameData.setFrameSet('crouch')
+                        }
                         break
                     case inputs.StickState.Forward:
                         this.frameData.setFrameSet('walk-forward')
                         break
                     case inputs.StickState.Back:
-                        this.frameData.setFrameSet('walk-back')
+                        if(this.opponent.attacking) {
+                            this.frameData.setFrameSet('stand-block')
+                        } else {
+                            this.frameData.setFrameSet('walk-back')
+                        }
                         break
                     case inputs.StickState.UpBack:
                         this.frameData.setFrameSet('jump-back')
@@ -181,6 +200,9 @@ namespace fighters {
                         break
                 }
             }
+
+            processNormals(this.input.punch, 'punch')
+            processNormals(this.input.kick, 'kick')
 
             // switch frame set
             if(prevKey != this.frameData.setKey) {
@@ -229,7 +251,7 @@ namespace fighters {
     })
 
     export function processBumps(p1: Fighter, p2: Fighter):void {
-        const bumpBox:collisions.CollisionBox = new collisions.CollisionBox(0, 0, 8, 8)
+        const bumpBox:collisions.CollisionBox = new collisions.CollisionBox(0, 0, 12, 12)
         bumpBox.compute(p1, p1.box)
         bumpBox.compute(p2, p2.box)
 
@@ -250,7 +272,7 @@ namespace fighters {
         const p2Frame = p2.frameData.frame
 
         const registerHit = (attacker: Fighter, defender: Fighter):boolean => {
-            if(!attacker.frameData.hitDone && attacker.frameData.frame.hitbox) {
+            if(!attacker.frameData.hitDone && !defender.frameData.frame.invincible && attacker.frameData.frame.hitbox) {
                 attacker.frameData.frame.hitbox.compute(attacker, attacker.box)
                 defender.frameData.frame.hurtbox.compute(defender, defender.box)
                 if(attacker.box.collideWith(defender.box)) {
@@ -265,6 +287,24 @@ namespace fighters {
         const p1Hit = registerHit(p2, p1)
 
         const resolveHit = (attackerFrame: frames.Frame, defender: Fighter) => {
+            if (
+                defender.action == frames.Action.Block
+                && (
+                    (attackerFrame.blockedHigh && defender.stance == frames.Stance.Stand)
+                    || (attackerFrame.blockedLow && defender.stance == frames.Stance.Crouched)
+                )
+            ) {
+                switch (defender.frameData.frame.stance) {
+                    case frames.Stance.Stand:
+                        defender.frameData.setFrameSet('stand-block-recover', defender)
+                        break
+                    case frames.Stance.Crouched:
+                        defender.frameData.setFrameSet('crouch-block-recover', defender)
+                        break
+                }
+                return
+            }
+
             if(attackerFrame.knockdown) {
                 defender.frameData.setFrameSet('jump-wound', defender)
                 return

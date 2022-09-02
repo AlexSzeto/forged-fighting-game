@@ -34,18 +34,28 @@ LYNDSAY_DATA.frameData.addFrameSet('idle', assets.animation`lyndsay-idle`, [
 LYNDSAY_DATA.frameData.addFrameSet('punch', assets.animation`lyndsay-punch`, [
     {
         action: frames.Action.Attack,
-
         duration: 300,
-        hitbox: new collisions.CollisionBox(15, 0, 10, 10)
+    },
+    {
+        duration: 100,
+        hitbox: new collisions.CollisionBox(15, 0, 10, 10),
+        knockdown: true
+    },
+    {
+
     }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('kick', assets.animation`lyndsay-kick`, [
     {
         action: frames.Action.Attack,
-
-        duration: 300,
+    },
+    {
+        duration: 100,
         hitbox: new collisions.CollisionBox(15, 15, 10, 10)
+    },
+    {
+
     }
 ])
 
@@ -61,9 +71,15 @@ LYNDSAY_DATA.frameData.addFrameSet('crouch-punch', assets.animation`lyndsay-crou
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Attack,
-        hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+        duration: 150,
+    },
+    {
 
-        duration: 300,
+        hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+        duration: 100,
+    },
+    {
+        duration: 50,
     }
 ])
 
@@ -71,10 +87,14 @@ LYNDSAY_DATA.frameData.addFrameSet('crouch-kick', assets.animation`lyndsay-crouc
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Attack,
+    },
+    {
         hitbox: new collisions.CollisionBox(15, 22, 10, 10),
         knockdown: true,
+        duration: 100,
+    },
+    {
 
-        duration: 300,
     }
 ])
 
@@ -110,10 +130,15 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-punch', assets.animation`lyndsay-jump-p
     {
         stance: frames.Stance.Airborne,
         action: frames.Action.Attack,
-
-        duration: 3000,
         motion: false,
+    },
+    {
+
         hitbox: new collisions.CollisionBox(15, 15, 10, 10)
+    },
+    {
+        duration: -1,
+
     }
 ])
 
@@ -121,11 +146,16 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-kick', assets.animation`lyndsay-jump-ki
     {
         stance: frames.Stance.Airborne,
         action: frames.Action.Attack,
-
-        duration: 3000,
         motion: false,
+    },
+    {
+
         hitbox: new collisions.CollisionBox(15, 15, 10, 10),
         knockdown: true
+    },
+    {
+        duration: -1,
+
     }
 ])
 
@@ -140,7 +170,7 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-forward', assets.animation`lyndsay-jump
         vy: -220
     },
     {
-        duration: 3000,
+        duration: -1,
     }
 ])
 
@@ -154,7 +184,7 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-up', assets.animation`lyndsay-jump`, [
         vy: -220
     },
     {
-        duration: 3000,
+        duration: -1,
     }
 ])
 
@@ -169,30 +199,31 @@ LYNDSAY_DATA.frameData.addFrameSet('jump-back', assets.animation`lyndsay-jump`, 
         vy: -220
     },
     {
-        duration: 3000,
+        duration: -1,
     }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('stand-wound', assets.animation`lyndsay-stand-wound`, [
     {
-        action: frames.Action.Pain,
-        vx: -20
-    }, { duration: 200 }
+        action: frames.Action.Pain,        
+    }, { vx: -30 }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('crouch-wound', assets.animation`lyndsay-crouch-wound`, [
     {
         stance: frames.Stance.Crouched,
         action: frames.Action.Pain,
-        vx: -20
-    }, { duration: 200 }
+    },
+    {
+        vx: -30
+    }
 ])
 
 LYNDSAY_DATA.frameData.addFrameSet('jump-wound', assets.animation`lyndsay-jump-wound`, [
     { 
         stance: frames.Stance.Airborne,
         action: frames.Action.Pain,
-        duration: 3000,
+        duration: -1,
         vx: -50,
         vy: -50
     }
@@ -202,10 +233,42 @@ LYNDSAY_DATA.frameData.addFrameSet('prone', assets.animation`lyndsay-prone`, [
     {
         oy: 8,
         action: frames.Action.Pain,
+        invincible: true
     }, 
     {
         oy: 8,
-        duration: 400 
+        duration: 400,
+        invincible: true
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('stand-block', assets.animation`lyndsay-stand-block`, [
+    {
+        action: frames.Action.Block,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('stand-block-recover', assets.animation`lyndsay-stand-block`, [
+    {
+        action: frames.Action.Block,
+        frameIndex: 1,
+        vx: -10
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('crouch-block', assets.animation`lyndsay-crouch-block`, [
+    {
+        stance: frames.Stance.Crouched,
+        action: frames.Action.Block,
+    }
+])
+
+LYNDSAY_DATA.frameData.addFrameSet('crouch-block-recover', assets.animation`lyndsay-crouch-block`, [
+    {
+        stance: frames.Stance.Crouched,
+        action: frames.Action.Block,
+        frameIndex: 1,
+        vx: -10
     }
 ])
 

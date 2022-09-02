@@ -40,6 +40,8 @@ namespace frames {
         hurtbox?: collisions.CollisionBox
 
         damage?: number
+        blockedHigh?: boolean
+        blockedLow?: boolean
         knockdown?: boolean
     }
 
@@ -58,6 +60,8 @@ namespace frames {
         hitbox: collisions.CollisionBox
         hurtbox: collisions.CollisionBox
         damage: number
+        blockedHigh: boolean
+        blockedLow: boolean
         knockdown: boolean
 
         image: Image
@@ -115,6 +119,7 @@ namespace frames {
                     projectileDefaults
                 })
             }
+            console.log('setting ' + key)
 
             const prevParams: FrameParams = {
                 action: Action.Neutral,
@@ -122,9 +127,6 @@ namespace frames {
             }
 
             this.sets[key] = data.map((params, index) => {
-                if(key == 'animation') {
-                    console.log(params)
-                }
                 const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
                     image: image.clone(),
@@ -142,12 +144,14 @@ namespace frames {
                         : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
                     hurtbox: params.hurtbox
                         ? params.hurtbox
-                        : (projectileDefaults ? null : new collisions.CollisionBox(0, 0, image.width, image.height)),
+                        : new collisions.CollisionBox(0, 0, image.width, image.height),
 
                     invincible: params.invincible ? params.invincible : false,
                     stance: params.stance ? params.stance : prevParams.stance,
                     action: params.action ? params.action : prevParams.action,
                     damage: params.damage ? params.damage : 0,
+                    blockedHigh: params.blockedHigh ? params.blockedHigh : true,
+                    blockedLow: params.blockedLow ? params.blockedLow : true,
                     knockdown: params.knockdown ? params.knockdown : false,
                     create: params.create ? params.create : null,
                     motion: (params.motion !== undefined)
@@ -189,7 +193,7 @@ namespace frames {
             if(!this._done) {
                 const currentSet = this.sets[this._setKey]
                 const currentFrame = this.frame
-                if(this.timer.elapsed >= currentFrame.duration) {
+                if(currentFrame.duration > 0 && this.timer.elapsed >= currentFrame.duration) {
                     this.timer.elapsed -= currentFrame.duration
 
                     if (currentFrame.nextFrame < 0 || currentFrame.nextFrame >= currentSet.length) {
