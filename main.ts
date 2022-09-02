@@ -1,7 +1,11 @@
+const p2Input = new ai.AIInput()
 const p1 = new fighters.Fighter(LYNDSAY_DATA, new inputs.ControllerInput(), true)
-const p2 = new fighters.Fighter(LYNDSAY_DATA, new ai.AIInput(), false)
+const p2 = new fighters.Fighter(LYNDSAY_DATA, p2Input, false)
+p2Input.fighter = p2
+p2Input.opponent = p1
 p1.opponent = p2
 p2.opponent = p1
+const fighterList = [p1, p2]
 
 const box1 = new collisions.Rectangle()
 const box2 = new collisions.Rectangle()
@@ -17,5 +21,12 @@ game.onUpdate(() => {
 
     for(const projectile of fighters.projectileList) {
         projectile.update()
+
+        for(const target of fighters.projectileList) {
+            projectile.processCancel(target)
+        }
+        for(const fighter of fighterList) {
+            projectile.processHit(fighter)
+        }
     }
 })

@@ -44,4 +44,7 @@ namespace collisions {
             )
         }
     }
+    
+    export let box1: Rectangle = new Rectangle()
+    export let box2: Rectangle = new Rectangle()
 }

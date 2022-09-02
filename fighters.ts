@@ -39,7 +39,6 @@ namespace fighters {
         // data cache
         ox: number = 0
         oy: number = 0
-        box: collisions.Rectangle = new collisions.Rectangle()
 
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
             this.frameData = data.frameData.clone()
@@ -74,7 +73,7 @@ namespace fighters {
         get action(): frames.Action { return this.frameData.frame.action }
         get attacking(): boolean { return this.action == frames.Action.Attack }
         get stance(): frames.Stance { return this.frameData.frame.stance }
-        get neutral(): boolean { return this.frameData.frame.action == frames.Action.Neutral }
+        get neutral(): boolean { return this.frameData.frame.neutral }
         get groundedNeutral(): boolean { return this.neutral && !this.airborne }
 
         processInput(): void {
@@ -170,7 +169,7 @@ namespace fighters {
                         this.frameData.setFrameSet('crouch')
                         break
                     case inputs.StickState.DownBack:
-                        if (this.opponent.attacking) {
+                        if (this.opponent.attacking || hasProjectileThreat(this)) {
                             this.frameData.setFrameSet('crouch-block')
                         } else {
                             this.frameData.setFrameSet('crouch')
@@ -180,7 +179,7 @@ namespace fighters {
                         this.frameData.setFrameSet('walk-forward')
                         break
                     case inputs.StickState.Back:
-                        if(this.opponent.attacking) {
+                        if (this.opponent.attacking || hasProjectileThreat(this)) {
                             this.frameData.setFrameSet('stand-block')
                         } else {
                             this.frameData.setFrameSet('walk-back')
@@ -212,10 +211,45 @@ namespace fighters {
             this.frameData.update(this)
             const create = this.frameData.create
             if (create) {
-                console.log('create ' + game.runtime())
                 const projectile = new Projectile(create.clone(), this)
             }
+        }
 
+        resolveHit(attackerFrame: frames.Frame) {
+            if (
+                this.action == frames.Action.Block
+                && (
+                    (attackerFrame.blockedHigh && this.stance == frames.Stance.Stand)
+                    || (attackerFrame.blockedLow && this.stance == frames.Stance.Crouched)
+                )
+            ) {
+                switch (this.frameData.frame.stance) {
+                    case frames.Stance.Stand:
+                        this.frameData.setFrameSet('stand-block-recover', this)
+                        break
+                    case frames.Stance.Crouched:
+                        this.frameData.setFrameSet('crouch-block-recover', this)
+                        break
+                }
+                return
+            }
+
+            if (attackerFrame.knockdown) {
+                this.frameData.setFrameSet('jump-wound', this)
+                return
+            }
+
+            switch (this.frameData.frame.stance) {
+                case frames.Stance.Stand:
+                    this.frameData.setFrameSet('stand-wound', this)
+                    break
+                case frames.Stance.Crouched:
+                    this.frameData.setFrameSet('crouch-wound', this)
+                    break
+                case frames.Stance.Airborne:
+                    this.frameData.setFrameSet('jump-wound', this)
+                    break
+            }
         }
     }
 
@@ -225,10 +259,10 @@ namespace fighters {
         faceRight: boolean
         ox: number = 0
         oy: number = 0
-
+        
         constructor(
-            private frameData: frames.FrameData,
-            private createdBy: Fighter
+            public frameData: frames.FrameData,
+            public createdBy: Fighter
         ) {
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
             projectileList.push(this)
@@ -237,12 +271,47 @@ namespace fighters {
             this.sprite.y = this.createdBy.sprite.y
             this.faceRight = this.createdBy.faceRight
 
-            this.frameData.setFrameSet('animation', this)
+            this.frameData.setFrameSet('active', this)
+        }
+
+        get active() {
+            return this.frameData.frame.action == frames.Action.Attack
         }
 
         update(): void {
             this.frameData.update(this)
-            console.log(this.frameData.frame.nextFrame)
+            if(this.frameData.done) {
+                this.sprite.destroy()
+            }
+        }
+
+        cancel(): void {
+            if(!this.frameData.frame.invincible) {
+                this.frameData.setFrameSet('death', this)
+            }
+        }
+
+        processCancel(target: Projectile) {
+            if(this != target && this.createdBy != target.createdBy && this.active && target.active) {
+                this.frameData.frame.hitbox.compute(this, collisions.box1)
+                target.frameData.frame.hitbox.compute(target, collisions.box2)
+                if(collisions.box1.collideWith(collisions.box2)) {
+                    this.cancel()
+                    target.cancel()
+                }
+            }
+            
+        }
+
+        processHit(target: Fighter) {
+            if (this.createdBy != target && this.active && !target.frameData.frame.invincible) {
+                this.frameData.frame.hitbox.compute(this, collisions.box1)
+                target.frameData.frame.hurtbox.compute(target, collisions.box2)
+                if(collisions.box1.collideWith(collisions.box2)) {
+                    target.resolveHit(this.frameData.frame)
+                    this.cancel()
+                }
+            }
         }
     }
 
@@ -250,13 +319,17 @@ namespace fighters {
         projectileList.removeElement(projectileList.find(projectile => projectile.sprite == sprite))
     })
 
+    export function hasProjectileThreat(target: Fighter):boolean {
+        return projectileList.some(projectile => projectile.createdBy != target && projectile.active)
+    }
+
     export function processBumps(p1: Fighter, p2: Fighter):void {
         const bumpBox:collisions.CollisionBox = new collisions.CollisionBox(0, 0, 12, 12)
-        bumpBox.compute(p1, p1.box)
-        bumpBox.compute(p2, p2.box)
+        bumpBox.compute(p1, collisions.box1)
+        bumpBox.compute(p2, collisions.box2)
 
-        if (p1.box.collideWith(p2.box)) {
-            const overlap = ((p1.box.width + p2.box.width) / 2 - Math.abs(p1.sprite.x - p2.sprite.x)) / 2
+        if (collisions.box1.collideWith(collisions.box2)) {
+            const overlap = ((collisions.box1.width + collisions.box2.width) / 2 - Math.abs(p1.sprite.x - p2.sprite.x)) / 2
             if (p1.sprite.x > p2.sprite.x) {
                 p1.sprite.x += overlap
                 p2.sprite.x -= overlap
@@ -273,9 +346,9 @@ namespace fighters {
 
         const registerHit = (attacker: Fighter, defender: Fighter):boolean => {
             if(!attacker.frameData.hitDone && !defender.frameData.frame.invincible && attacker.frameData.frame.hitbox) {
-                attacker.frameData.frame.hitbox.compute(attacker, attacker.box)
-                defender.frameData.frame.hurtbox.compute(defender, defender.box)
-                if(attacker.box.collideWith(defender.box)) {
+                attacker.frameData.frame.hitbox.compute(attacker, collisions.box1)
+                defender.frameData.frame.hurtbox.compute(defender, collisions.box2)
+                if (collisions.box1.collideWith(collisions.box2)) {
                     attacker.frameData.hitDone = true
                     return true
                 }
@@ -286,47 +359,11 @@ namespace fighters {
         const p2Hit = registerHit(p1, p2)
         const p1Hit = registerHit(p2, p1)
 
-        const resolveHit = (attackerFrame: frames.Frame, defender: Fighter) => {
-            if (
-                defender.action == frames.Action.Block
-                && (
-                    (attackerFrame.blockedHigh && defender.stance == frames.Stance.Stand)
-                    || (attackerFrame.blockedLow && defender.stance == frames.Stance.Crouched)
-                )
-            ) {
-                switch (defender.frameData.frame.stance) {
-                    case frames.Stance.Stand:
-                        defender.frameData.setFrameSet('stand-block-recover', defender)
-                        break
-                    case frames.Stance.Crouched:
-                        defender.frameData.setFrameSet('crouch-block-recover', defender)
-                        break
-                }
-                return
-            }
-
-            if(attackerFrame.knockdown) {
-                defender.frameData.setFrameSet('jump-wound', defender)
-                return
-            }
-            switch (defender.frameData.frame.stance) {
-                case frames.Stance.Stand:
-                    defender.frameData.setFrameSet('stand-wound', defender)
-                    break
-                case frames.Stance.Crouched:
-                    defender.frameData.setFrameSet('crouch-wound', defender)
-                    break
-                case frames.Stance.Airborne:
-                    defender.frameData.setFrameSet('jump-wound', defender)
-                    break
-            }
-        }
-
         if(p1Hit) {
-            resolveHit(p2Frame, p1)
+            p1.resolveHit(p2Frame)
         }
         if(p2Hit) {
-            resolveHit(p1Frame, p2)
+            p2.resolveHit(p1Frame)
         }
     }
 

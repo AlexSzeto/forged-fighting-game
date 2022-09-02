@@ -30,6 +30,7 @@ namespace frames {
         motion?: boolean
 
         // fight attributes
+        neutral?: boolean
         invincible?: boolean
         stance?: Stance
         action?: Action
@@ -53,6 +54,7 @@ namespace frames {
         vx: number
         vy: number
         motion: boolean
+        neutral: boolean
         invincible: boolean
         stance: Stance
         action: Action
@@ -124,6 +126,7 @@ namespace frames {
             const prevParams: FrameParams = {
                 action: Action.Neutral,
                 stance: Stance.Stand,
+                neutral: false
             }
 
             this.sets[key] = data.map((params, index) => {
@@ -146,6 +149,7 @@ namespace frames {
                         ? params.hurtbox
                         : new collisions.CollisionBox(0, 0, image.width, image.height),
 
+                    neutral: params.neutral ? params.neutral : prevParams.neutral,
                     invincible: params.invincible ? params.invincible : false,
                     stance: params.stance ? params.stance : prevParams.stance,
                     action: params.action ? params.action : prevParams.action,
@@ -161,6 +165,7 @@ namespace frames {
 
                 prevParams.stance = result.stance
                 prevParams.action = result.action
+                prevParams.neutral = result.neutral
 
                 return result
             })

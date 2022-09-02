@@ -105,8 +105,8 @@ namespace inputs {
 
         private stickMotions: StickState[] = []
         private motionIndex: number = 0
-        private punch: boolean = false
-        private kick: boolean = false
+        private _punch: boolean = false
+        private _kick: boolean = false
 
         private _execute: boolean = false
 
@@ -150,10 +150,10 @@ namespace inputs {
                         this.stickMotions.push(StickState.UpBack)
                         break
                     case 'P':
-                        this.punch = true
+                        this._punch = true
                         break
                     case 'K':
-                        this.kick = true
+                        this._kick = true
                         break
                 }
             }
@@ -162,6 +162,30 @@ namespace inputs {
         get execute(): boolean {
             return this._execute
         }
+
+        get nextMotion(): StickState {
+            if(this.motionIndex < this.stickMotions.length) {
+                switch(this.stickMotions[this.motionIndex]) {
+                    case StickState.ChargeDown:
+                    case StickState.ChargeBack:
+                        return StickState.DownBack
+                    default:
+                        return this.stickMotions[this.motionIndex]
+                }
+            } else {
+                return this.motionIndex == 0 ? StickState.Neutral : this.stickMotions[this.motionIndex - 1]
+            }
+        }
+
+        get executePunch(): boolean {
+            return this.motionIndex >= this.stickMotions.length ? this._punch : false
+        }
+
+        get executeKick(): boolean {
+            return this.motionIndex >= this.stickMotions.length ? this._kick : false
+        }
+
+
 
         private matchMotion(nextMotion: StickState, stickMotion: StickState, downCharged: boolean, backCharged: boolean): boolean {
             return (
@@ -207,8 +231,8 @@ namespace inputs {
 
             this._execute = (
                 this.motionIndex >= this.stickMotions.length
-                && (!this.punch || input.punch)
-                && (!this.kick || input.kick)
+                && (!this._punch || input.punch)
+                && (!this._kick || input.kick)
             )
         }
     }
