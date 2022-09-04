@@ -93,8 +93,6 @@ namespace frames {
         private frameIndex: number
         private timer: timers.Timer
 
-        private setInsertData: InsertFrameSetData[] = []
-
         hitDone: boolean = false
 
         constructor() {
@@ -104,25 +102,7 @@ namespace frames {
             this.timer = new timers.Timer()
         }
 
-        clone(): FrameData {
-            const result = new FrameData()
-            for(const data of this.setInsertData) {
-                result.addFrameSet(data.key, data.animation, data.data, data.projectileDefaults, true)
-            }
-            return result
-        }
-
         addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
-            if(!clone) {
-                this.setInsertData.push({
-                    key,
-                    animation,
-                    data,
-                    projectileDefaults
-                })
-            }
-            console.log('setting ' + key)
-
             const prevParams: FrameParams = {
                 action: Action.Neutral,
                 stance: Stance.Stand,
@@ -132,7 +112,7 @@ namespace frames {
             this.sets[key] = data.map((params, index) => {
                 const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
-                    image: image.clone(),
+                    image: image,
                     faceRight: false,
 
                     duration: params.duration ? params.duration : 200,

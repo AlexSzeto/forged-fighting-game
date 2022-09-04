@@ -41,7 +41,7 @@ namespace fighters {
         oy: number = 0
 
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
-            this.frameData = data.frameData.clone()
+            this.frameData = data.frameData
             this.input = input
 
             for(const specialMove of data.specials) {
@@ -211,7 +211,7 @@ namespace fighters {
             this.frameData.update(this)
             const create = this.frameData.create
             if (create) {
-                const projectile = new Projectile(create.clone(), this)
+                const projectile = new Projectile(create, this)
             }
         }
 

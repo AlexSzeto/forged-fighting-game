@@ -56,17 +56,17 @@ namespace ai {
                     if(Math.percentChance(50)) {
                         this.stick = inputs.StickState.Back
                     }                    
-                } else if (this.interval.elapsed > 1500) {
+                } else if (this.interval.elapsed > 500) {
                     this.interval.elapsed = 0
                     this.stick = Math.percentChance(30)
                         ? inputs.StickState.Neutral
-                        : Math.percentChance(60)
-                            ? (Math.percentChance(75)
-                                ? (Math.percentChance(50)
+                        : Math.percentChance(70)
+                            ? (Math.percentChance(80)
+                                ? (Math.percentChance(60)
                                     ? inputs.StickState.Forward
                                     : inputs.StickState.UpForward
                                 )
-                                : (Math.percentChance(50)
+                                : (Math.percentChance(60)
                                     ? inputs.StickState.Back
                                     : inputs.StickState.UpBack
                                 )
