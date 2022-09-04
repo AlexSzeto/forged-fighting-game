@@ -57,7 +57,7 @@ namespace fighters {
 
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
             this.sprite.setFlag(SpriteFlag.StayInScreen, true)
-            this.sprite.scale = 1
+            this.sprite.scale = 1.0
             this.gravity = 600 * this.sprite.scale
 
             if (spawnAs1P) {
