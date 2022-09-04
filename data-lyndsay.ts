@@ -138,24 +138,40 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('walk-forward', assets.animation`lyndsay-jump2`, [
+    data.frameData.addFrameSet('walk-forward', assets.animation`lyndsay-walk2`, [
         {
             neutral: true,
             vx: 50,
+            oy:-1,
         },
         {
-            frameIndex: 2,
+            oy: -1,
+        },
+        {
+            oy: -1,
+        },
+        {
+            oy: -1,
             nextFrame: 0
         }
     ])
 
-    data.frameData.addFrameSet('walk-back', assets.animation`lyndsay-jump2`, [
+    data.frameData.addFrameSet('walk-back', assets.animation`lyndsay-walk2`, [
         {
             neutral: true,
             vx: -50,
+            oy: -1,
         },
         {
-            frameIndex: 2,
+            oy: -1,
+        },
+        {
+            oy: -1,
+
+        },
+        {
+            
+            oy: -1,
             nextFrame: 0
         }
     ])
