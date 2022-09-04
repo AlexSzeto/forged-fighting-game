@@ -1121,6 +1121,7 @@ eeecccccccccccccccccccccccc...
 ...........eeccc5555544cccce4e..
 ..........44e..ccccccccccccc44e.
 `];
+
             case "lyndsay-jump2":
             case "anim25":return [img`
 ......................
@@ -1542,6 +1543,7 @@ dd4ca5aaccaaccccc4ccd.
 .........ccce4cc......
 ........ccccee4c......
 `];
+
             case "lyndsay-kick2":
             case "anim21":return [img`
 ............................
@@ -1643,6 +1645,7 @@ dd4ca5aaccaaccccc4ccd.
 ...........cccccccceee......
 ............cccccccc4ee.....
 `];
+
             case "lyndsay-crouch-kick2":
             case "anim2":return [img`
 ................................
@@ -1897,6 +1900,7 @@ dd4ca5aaccaaccccc4ccd.
 ......eeccc555cca44cc.
 .....44eeccccccaa4eecc
 `];
+
         }
         return null;
     })
