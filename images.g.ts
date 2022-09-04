@@ -2073,6 +2073,7 @@ eeecccccccccccccccccccccccc...
 ...........eeccc5555544cccce4e..
 ..........44e..ccccccccccccc44e.
 `];
+
             case "lyndsay-idle":
             case "anim1":return [img`
 ...........9996.......
