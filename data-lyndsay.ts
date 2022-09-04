@@ -77,17 +77,20 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('kick', assets.animation`lyndsay-kick`, [
+    data.frameData.addFrameSet('kick', assets.animation`lyndsay-kick2`, [
         {
             action: frames.Action.Attack,
             duration: 200,
+            oy: -2
         },
         {
             duration: 50,
+            oy: -2,
             hitbox: new collisions.CollisionBox(15, 15, 10, 10)
         },
         {
-            duration: 50,
+            oy: -2,
+            duration: 100,
         }
     ])
 
@@ -349,14 +352,14 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('special-fireball', assets.animation`lyndsay-fireball2`, [
         {
             action: frames.Action.Special,
-            duration: 300,
+            duration: 200,
         },
         {
-            duration: 100,
+            duration: 150,
             create: LYNDSAY_FIREBALL(),
         },
         {
-            duration: 250,
+            duration: 150,
         }
     ])
 
