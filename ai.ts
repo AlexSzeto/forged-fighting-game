@@ -84,6 +84,9 @@ namespace ai {
         punch: boolean
         kick: boolean
 
+        fighter: fighters.Fighter
+        opponent: fighters.Fighter
+
         constructor() {
             this.stick = inputs.StickState.Neutral
             this.punch = false

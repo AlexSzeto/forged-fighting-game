@@ -269,13 +269,15 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('stand-wound', assets.animation`lyndsay-stand-wound`, [
+    data.frameData.addFrameSet('stand-wound', assets.animation`lyndsay-stand-wound2`, [
         {
             action: frames.Action.Pain,
-            vx: -20
+            vx: -20,
+            frameIndex: 1
         },
         {
-            motion: false
+            motion: false,
+            frameIndex: 2
         }
     ])
 

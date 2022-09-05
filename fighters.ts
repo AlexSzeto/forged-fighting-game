@@ -65,6 +65,7 @@ namespace fighters {
             } else {
                 this.sprite.x = 100
             }
+            this.sprite.y = 80
 
             this.frameData.setFrameSet('idle', this)
         }
@@ -223,6 +224,7 @@ namespace fighters {
                     || (attackerFrame.blockedLow && this.stance == frames.Stance.Crouched)
                 )
             ) {
+                this.sprite.z = 10
                 switch (this.frameData.frame.stance) {
                     case frames.Stance.Stand:
                         this.frameData.setFrameSet('stand-block-recover', this)
@@ -350,6 +352,7 @@ namespace fighters {
                 defender.frameData.frame.hurtbox.compute(defender, collisions.box2)
                 if (collisions.box1.collideWith(collisions.box2)) {
                     attacker.frameData.hitDone = true
+                    attacker.sprite.z = 20
                     return true
                 }
             }
