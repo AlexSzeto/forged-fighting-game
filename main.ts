@@ -1,4 +1,5 @@
-scene.setBackgroundImage(assets.image`forest2`)
+// scene.setBackgroundImage(assets.image`forest2`)
+scene.setBackgroundColor(Math.randomRange(1, 15))
 const p1Input = new ai.DummyInput()
 const p2Input = new ai.DummyInput()
 const p1 = new fighters.Fighter(LYNDSAY_FIGHTER(), new inputs.ControllerInput(), true)

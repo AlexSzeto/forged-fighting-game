@@ -62,16 +62,16 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('punch', assets.animation`lyndsay-punch2`, [
         {
             action: frames.Action.Attack,
-            duration: 150,
+            duration: 200,
             ox: 4,
         },
         {
-            duration: 50,
+            duration: 100,
             hitbox: new collisions.CollisionBox(15, 0, 10, 10),
             ox: 4,
         },
         {
-            duration: 200,
+            duration: 100,
             ox: 4,
 
         }
@@ -98,25 +98,30 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             neutral: true,
             stance: frames.Stance.Crouched,
-            frameIndex: 1,
             nextFrame: 0
         }
     ])
 
-    data.frameData.addFrameSet('crouch-punch', assets.animation`lyndsay-crouch-punch`, [
+    data.frameData.addFrameSet('crouch-punch', assets.animation`lyndsay-crouch-punch0`, [
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Attack,
             duration: 150,
+            frameIndex: 1,
+            oy: -4,
         },
         {
 
-            hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+            frameIndex: 2,
+            hitbox: new collisions.CollisionBox(4, -10, 10, 10),
             blockedHigh: false,
             duration: 100,
+            oy: -4,
         },
         {
-            duration: 50,
+            frameIndex: 3,
+            duration: 200,
+            oy: -4,
         }
     ])
 
@@ -124,16 +129,16 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Attack,
-            duration: 250,
+            duration: 150,
         },
         {
             hitbox: new collisions.CollisionBox(15, 15, 10, 10),
             blockedHigh: false,
             knockdown: true,
-            duration: 50,
+            duration: 100,
         },
         {
-            duration: 150
+            duration: 200
         }
     ])
 
@@ -175,40 +180,47 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('jump-punch', assets.animation`lyndsay-jump-punch`, [
+    data.frameData.addFrameSet('jump-punch', assets.animation`lyndsay-jump-punch2`, [
         {
             stance: frames.Stance.Airborne,
             action: frames.Action.Attack,
             motion: false,
-            duration: 50,
+            duration: 150,
+            oy: 4
         },
         {
-
+         
             hitbox: new collisions.CollisionBox(15, 15, 10, 10),
             blockedLow: false,
-            duration: 400
+            duration: 150,
+            oy: 4
         },
         {
-            duration: -1,
+        
+            duration: 200,
+            oy: 4
 
         }
     ])
 
-    data.frameData.addFrameSet('jump-kick', assets.animation`lyndsay-jump-kick`, [
+    data.frameData.addFrameSet('jump-kick', assets.animation`lyndsay-jump-kick2`, [
         {
             stance: frames.Stance.Airborne,
             action: frames.Action.Attack,
             motion: false,
-            duration: 50,
+            duration: 100,
+            frameIndex: 1,
         },
         {
 
             hitbox: new collisions.CollisionBox(15, 15, 10, 10),
             blockedLow: false,
             duration: 600,
+            frameIndex: 2,
         },
         {
             duration: -1,
+            frameIndex: 3,
 
         }
     ])
