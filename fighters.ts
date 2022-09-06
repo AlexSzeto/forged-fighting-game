@@ -58,14 +58,14 @@ namespace fighters {
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
             this.sprite.setFlag(SpriteFlag.StayInScreen, true)
             this.sprite.scale = 1.0
-            this.gravity = 600 * this.sprite.scale
+            this.gravity = 400 * this.sprite.scale
 
             if (spawnAs1P) {
                 this.sprite.x = 40
             } else {
                 this.sprite.x = 100
             }
-            this.sprite.y = 80
+            //this.sprite.y = 80
 
             this.frameData.setFrameSet('idle', this)
         }
@@ -241,15 +241,17 @@ namespace fighters {
                 return
             }
 
+            // temp set same frameset fix
+            
             switch (this.frameData.frame.stance) {
                 case frames.Stance.Stand:
-                    this.frameData.setFrameSet('stand-wound', this)
+                    this.frameData.setFrameSet('stand-wound', this, true)
                     break
                 case frames.Stance.Crouched:
-                    this.frameData.setFrameSet('crouch-wound', this)
+                    this.frameData.setFrameSet('crouch-wound', this, true)
                     break
                 case frames.Stance.Airborne:
-                    this.frameData.setFrameSet('jump-wound', this)
+                    this.frameData.setFrameSet('jump-wound', this, true)
                     break
             }
         }

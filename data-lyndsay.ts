@@ -67,7 +67,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         },
         {
             duration: 100,
-            hitbox: new collisions.CollisionBox(15, 0, 10, 10),
+            hitbox: new collisions.CollisionBox(8, 0, 16, 8),
             ox: 4,
         },
         {
@@ -80,7 +80,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('kick', assets.animation`lyndsay-kick2`, [
         {
             action: frames.Action.Attack,
-            duration: 200,
+            duration: 50,
             oy: -2
         },
         {
@@ -90,7 +90,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         },
         {
             oy: -2,
-            duration: 50,
+            duration: 150,
         }
     ])
 
@@ -190,14 +190,14 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         },
         {
          
-            hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+            hitbox: new collisions.CollisionBox(0, 10, 20, 10),
             blockedLow: false,
             duration: 150,
             oy: 4
         },
         {
         
-            duration: 200,
+            duration: -1,
             oy: 4
 
         }
@@ -231,7 +231,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             stance: frames.Stance.Airborne,
             duration: 50,
             vx: 50,
-            vy: -220
+            vy: -160
         },
         {
             neutral: true,
@@ -249,7 +249,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             neutral: true,
             stance: frames.Stance.Airborne,
             duration: 50,
-            vy: -220
+            vy: -160
         },
         {
             neutral: true,
@@ -268,7 +268,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             stance: frames.Stance.Airborne,
             duration: 50,
             vx: -50,
-            vy: -220
+            vy: -160
         },
         {
             neutral: true,
@@ -285,21 +285,28 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             action: frames.Action.Pain,
             vx: -20,
-            frameIndex: 1
+            frameIndex: 1,
+            ox: -2
         },
         {
+            ox: -2,
             motion: false,
             frameIndex: 2
         }
     ])
 
-    data.frameData.addFrameSet('crouch-wound', assets.animation`lyndsay-crouch-wound`, [
+    data.frameData.addFrameSet('crouch-wound', assets.animation`lyndsay-crouch-wound2`, [
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Pain,
+            frameIndex: 1,
+            vx: -20,
+            ox: -3,
         },
         {
-            vx: -30
+            frameIndex: 2,
+           
+            ox: -3
         }
     ])
 
@@ -326,19 +333,23 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('stand-block', assets.animation`lyndsay-stand-block`, [
+    data.frameData.addFrameSet('stand-block', assets.animation`lyndsay-stand-block2`, [
         {
             neutral: true,
             action: frames.Action.Block,
-            
+            frameIndex: 1,
+            oy: -1,
+            duration: 300,
         }
     ])
 
-    data.frameData.addFrameSet('stand-block-recover', assets.animation`lyndsay-stand-block`, [
+    data.frameData.addFrameSet('stand-block-recover', assets.animation`lyndsay-stand-block2`, [
         {
             action: frames.Action.Block,
-            frameIndex: 1,
-            vx: -10
+            frameIndex: 2,
+            vx: -16,
+            oy: -1,
+            duration: 300
         }
     ])
 
@@ -347,6 +358,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             neutral: true,
             stance: frames.Stance.Crouched,
             action: frames.Action.Block,
+            
         }
     ])
 

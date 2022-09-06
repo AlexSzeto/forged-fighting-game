@@ -192,8 +192,8 @@ namespace frames {
             }
         }
 
-        setFrameSet(key: string, target: FrameControlledSprite = null) {
-            if (this._setKey != key) {
+        setFrameSet(key: string, target: FrameControlledSprite = null, restartSameSet: boolean = false) {
+            if (this._setKey != key || restartSameSet) {
                 this._setKey = key
                 this.frameIndex = 0
                 this._done = false
