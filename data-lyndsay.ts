@@ -63,16 +63,16 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             action: frames.Action.Attack,
             duration: 200,
-            ox: 4,
+            ox: 8,
         },
         {
             duration: 100,
             hitbox: new collisions.CollisionBox(8, 0, 16, 8),
-            ox: 4,
+            ox: 12,
         },
         {
             duration: 100,
-            ox: 4,
+            ox: 8,
 
         }
     ])
@@ -193,7 +193,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             hitbox: new collisions.CollisionBox(0, 10, 20, 10),
             blockedLow: false,
             duration: 150,
-            oy: 4
+            oy: 8
         },
         {
         
@@ -284,7 +284,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('stand-wound', assets.animation`lyndsay-stand-wound2`, [
         {
             action: frames.Action.Pain,
-            vx: -20,
+            vx: -30,
             frameIndex: 1,
             ox: -2
         },
@@ -353,21 +353,24 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('crouch-block', assets.animation`lyndsay-crouch-block`, [
+    data.frameData.addFrameSet('crouch-block', assets.animation`lyndsay-crouch-block2`, [
         {
             neutral: true,
             stance: frames.Stance.Crouched,
             action: frames.Action.Block,
-            
+            frameIndex: 1,
+            duration: 300,
+
         }
     ])
 
-    data.frameData.addFrameSet('crouch-block-recover', assets.animation`lyndsay-crouch-block`, [
+    data.frameData.addFrameSet('crouch-block-recover', assets.animation`lyndsay-crouch-block2`, [
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Block,
-            frameIndex: 1,
-            vx: -10
+            frameIndex: 2,
+            vx: -12,
+            duration: 300,
         }
     ])
 
