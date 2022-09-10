@@ -9,8 +9,13 @@ namespace frames {
         Neutral,
         Block,
         Pain,
-        Attack,
+        Punch,
+        Kick,
+        Grab,
+        Throw,
+        Choke,
         Special,
+        Attack,
     }
 
     type FrameParams = {
@@ -110,34 +115,34 @@ namespace frames {
             }
 
             this.sets[key] = data.map((params, index) => {
-                const image = params.frameIndex ? animation[params.frameIndex] : animation[index]
+                const image = params.frameIndex != null ? animation[params.frameIndex] : animation[index]
                 const result: Frame = {
                     image: image,
                     faceRight: false,
 
-                    duration: params.duration ? params.duration : 200,
-                    nextFrame: (params.nextFrame != null) ? params.nextFrame : index + 1,
-                    ox: params.ox ? params.ox : 0,
-                    oy: params.oy ? params.oy : 0,
-                    vx: params.vx ? params.vx : 0,
-                    vy: params.vy ? params.vy : 0,
+                    duration: params.duration != undefined ? params.duration : 200,
+                    nextFrame: params.nextFrame != undefined ? params.nextFrame : index + 1,
+                    ox: params.ox != undefined ? params.ox : 0,
+                    oy: params.oy != undefined ? params.oy : 0,
+                    vx: params.vx != undefined ? params.vx : 0,
+                    vy: params.vy != undefined ? params.vy : 0,
 
-                    hitbox: params.hitbox
+                    hitbox: params.hitbox != undefined
                         ? params.hitbox
                         : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
-                    hurtbox: params.hurtbox
+                    hurtbox: params.hurtbox != undefined
                         ? params.hurtbox
                         : new collisions.CollisionBox(0, 0, image.width, image.height),
 
-                    neutral: params.neutral ? params.neutral : prevParams.neutral,
-                    invincible: params.invincible ? params.invincible : false,
-                    stance: params.stance ? params.stance : prevParams.stance,
-                    action: params.action ? params.action : prevParams.action,
-                    damage: params.damage ? params.damage : 0,
-                    blockedHigh: params.blockedHigh ? params.blockedHigh : true,
-                    blockedLow: params.blockedLow ? params.blockedLow : true,
-                    knockdown: params.knockdown ? params.knockdown : false,
-                    create: params.create ? params.create : null,
+                    neutral: params.neutral != undefined ? params.neutral : prevParams.neutral,
+                    invincible: params.invincible != undefined ? params.invincible : false,
+                    stance: params.stance != undefined ? params.stance : prevParams.stance,
+                    action: params.action != undefined ? params.action : prevParams.action,
+                    damage: params.damage != undefined ? params.damage : 0,
+                    blockedHigh: params.blockedHigh != undefined ? params.blockedHigh : true,
+                    blockedLow: params.blockedLow != undefined ? params.blockedLow : true,
+                    knockdown: params.knockdown != undefined ? params.knockdown : false,
+                    create: params.create != undefined ? params.create : null,
                     motion: (params.motion !== undefined)
                         ? params.motion
                         : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),

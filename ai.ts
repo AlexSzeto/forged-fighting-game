@@ -40,7 +40,10 @@ namespace ai {
 
                 if (this.attackInterval.elapsed > 500) {
                     this.attackInterval.elapsed = 0
-                    if(Math.percentChance(15)) {
+                    if(
+                        (this.fighter.stance == frames.Stance.Airborne && Math.percentChance(50))
+                        || (this.fighter.stance != frames.Stance.Airborne && Math.percentChance(15))
+                    ) {
                         this.currentSpecial = Math.pickRandom(this.fighter.specials).motion
                     } else {
                         this.punch = Math.percentChance(25)
@@ -87,8 +90,8 @@ namespace ai {
         fighter: fighters.Fighter
         opponent: fighters.Fighter
 
-        constructor() {
-            this.stick = inputs.StickState.Neutral
+        constructor(state: inputs.StickState) {
+            this.stick = state
             this.punch = false
             this.kick = false
         }
