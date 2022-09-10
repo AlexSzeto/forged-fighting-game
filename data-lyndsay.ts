@@ -36,8 +36,16 @@ const LYNDSAY_FIREBALL = (): frames.FrameData => {
 }
 
 const LYNDSAY_FIGHTER = (): fighters.FighterData => {
-    const data = {
+    const data:fighters.FighterData = {
         frameData: new frames.FrameData(),
+        grabData: [
+            {
+                frameSetId: 'punch',
+                range: -8,
+                stance: frames.Stance.Stand,
+                opponentAirborne: false,
+            }
+        ],
         specials: [
             {
                 frameSetKey: 'special-fireball',
@@ -62,6 +70,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('punch', assets.animation`lyndsay-punch2`, [
         {
             action: frames.Action.Attack,
+            
             duration: 200,
             ox: 8,
         },
@@ -80,13 +89,15 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
     data.frameData.addFrameSet('kick', assets.animation`lyndsay-kick2`, [
         {
             action: frames.Action.Attack,
+            
             duration: 50,
             oy: -2
         },
         {
             duration: 50,
             oy: -2,
-            hitbox: new collisions.CollisionBox(15, 15, 10, 10)
+            hitbox: new collisions.CollisionBox(15, 15, 10, 10),
+            blockedHigh: false
         },
         {
             oy: -2,
@@ -106,6 +117,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Attack,
+            
             duration: 150,
             frameIndex: 1,
             oy: -4,
@@ -129,6 +141,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             stance: frames.Stance.Crouched,
             action: frames.Action.Attack,
+            
             duration: 150,
         },
         {
@@ -215,7 +228,7 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
 
             hitbox: new collisions.CollisionBox(15, 15, 10, 10),
             blockedLow: false,
-            duration: 600,
+            duration: 200,
             frameIndex: 2,
         },
         {
@@ -286,12 +299,12 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             action: frames.Action.Pain,
             vx: -30,
             frameIndex: 1,
-            ox: -2
+            ox: -2,
         },
         {
-            ox: -2,
-            motion: false,
-            frameIndex: 2
+            frameIndex: 2,
+
+            ox: -2
         }
     ])
 
@@ -310,26 +323,29 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addFrameSet('jump-wound', assets.animation`lyndsay-jump-wound`, [
+    data.frameData.addFrameSet('jump-wound', assets.animation`lyndsay-jump-wound2`, [
         { 
             stance: frames.Stance.Airborne,
             action: frames.Action.Pain,
             duration: -1,
             vx: -50,
-            vy: -50
-        }
+            vy: -90,
+            oy: -8,
+            frameIndex: 2,
+        },
+
     ])
 
-    data.frameData.addFrameSet('prone', assets.animation`lyndsay-prone`, [
+    data.frameData.addFrameSet('prone', assets.animation`lyndsay-prone2`, [
         {
-            oy: 8,
+            frameIndex: 1,
             action: frames.Action.Pain,
-            invincible: true
+            invincible: true,
         }, 
         {
-            oy: 8,
+            frameIndex: 2,
             duration: 400,
-            invincible: true
+            invincible: true,
         }
     ])
 
@@ -371,6 +387,28 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
             frameIndex: 2,
             vx: -12,
             duration: 300,
+        }
+    ])
+
+    data.frameData.addFrameSet('grab', assets.animation`lyndsay-grab`, [
+        {
+            stance: frames.Stance.Stand,
+            action: frames.Action.Grab,
+            frameIndex: 1,
+        },
+        {
+            action: frames.Action.Throw,
+            frameIndex: 2,
+        }
+    ])
+
+    data.frameData.addFrameSet('choke', assets.animation`lyndsay-choke`, [
+        {
+            stance: frames.Stance.Stand,
+            action: frames.Action.Choke,
+            frameIndex: 1,
+            duration: -1,
+            invincible: true,            
         }
     ])
 

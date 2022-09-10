@@ -3,6 +3,7 @@ namespace fighters {
 
     export type FighterData = {
         frameData: frames.FrameData
+        grabData: GrabData[]
         specials: SpecialMoveData[]
     }
 
@@ -10,6 +11,13 @@ namespace fighters {
         frameSetKey: string,
         ground: boolean,
         air: boolean
+    }
+
+    export type GrabData = {
+        frameSetId: string
+        range: number
+        stance: frames.Stance
+        opponentAirborne: boolean
     }
 
     export type SpecialMoveData = SpecialMoveSharedData & {
@@ -30,6 +38,7 @@ namespace fighters {
         // model
         frameData: frames.FrameData
         input: inputs.Input
+        grabData: GrabData[]
         specials: SpecialMoveTracker[] = []
 
         // temporary
@@ -43,6 +52,7 @@ namespace fighters {
         constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
             this.frameData = data.frameData
             this.input = input
+            this.grabData = data.grabData
 
             for(const specialMove of data.specials) {
                 this.specials.push({
@@ -115,6 +125,13 @@ namespace fighters {
                 this.sprite.y = this.groundPlane + this.oy
             }
 
+            if(this.sprite.x < 20) {
+                this.sprite.x = 20
+            }
+            if(this.sprite.x > scene.screenWidth() - 20) {
+                this.sprite.x = scene.screenWidth() - 20
+            }
+
             if(this.sprite.y < this.groundPlane + this.oy) {
                 this.sprite.ay = this.gravity
             }
@@ -126,6 +143,10 @@ namespace fighters {
                 this.sprite.fx = 40
             } else {
                 this.sprite.fx = 0
+            }
+
+            if(this.action == frames.Action.Throw && this.opponent.action == frames.Action.Choke) {
+                this.opponent.frameData.setFrameSet('jump-wound', this.opponent)
             }
 
             // END TEMP MANAGEMENT
@@ -148,6 +169,20 @@ namespace fighters {
             const processNormals = (hasInput: boolean, frameSetId: string) => {
                 if(hasInput) {
                     if(this.neutral) {
+                        for(const grabData of this.grabData) {
+                            if (
+                                this.stance == grabData.stance
+                                && frameSetId == grabData.frameSetId
+                                && this.opponent.airborne == grabData.opponentAirborne
+                                && this.frameData.frame.hurtbox != null
+                                && this.opponent.frameData.frame.hurtbox != null
+                                && Math.abs(this.sprite.x - this.opponent.sprite.x) < this.frameData.frame.hurtbox.width / 2 + this.opponent.frameData.frame.hurtbox.width / 2 + grabData.range
+                            ) {
+                                this.frameData.setFrameSet('grab')
+                                this.opponent.frameData.setFrameSet('choke', this.opponent)
+                                return
+                            }
+                        }
                         switch (this.stance) {
                             case frames.Stance.Stand:
                                 this.frameData.setFrameSet(frameSetId)
