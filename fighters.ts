@@ -113,6 +113,7 @@ namespace fighters {
                         (this.sprite.x > this.opponent.sprite.x && this.faceRight)
                         || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
                     ) {
+                    // {
                         this.faceRight = !this.faceRight
                         this.frameData.setFrame(this)
                         this.opponent.faceRight = !this.opponent.faceRight
@@ -248,6 +249,8 @@ namespace fighters {
             const create = this.frameData.create
             if (create) {
                 const projectile = new Projectile(create, this)
+                projectile.sprite.z = 20
+                
             }
         }
 
@@ -303,6 +306,7 @@ namespace fighters {
             public frameData: frames.FrameData,
             public createdBy: Fighter
         ) {
+            this.frameData = this.frameData.clone()
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
             projectileList.push(this)
             this.sprite.setFlag(SpriteFlag.AutoDestroy, true)

@@ -107,11 +107,19 @@ namespace frames {
             this.timer = new timers.Timer()
         }
 
+        clone(): FrameData {
+            const result = new FrameData()
+            result.sets = this.sets
+            return result
+        }
+
         addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
             const prevParams: FrameParams = {
                 action: Action.Neutral,
                 stance: Stance.Stand,
-                neutral: false
+                neutral: false,
+                ox: 0,
+                oy: 0
             }
 
             this.sets[key] = data.map((params, index) => {
@@ -122,8 +130,8 @@ namespace frames {
 
                     duration: params.duration != undefined ? params.duration : 200,
                     nextFrame: params.nextFrame != undefined ? params.nextFrame : index + 1,
-                    ox: params.ox != undefined ? params.ox : 0,
-                    oy: params.oy != undefined ? params.oy : 0,
+                    ox: params.ox != undefined ? params.ox : prevParams.ox,
+                    oy: params.oy != undefined ? params.oy : prevParams.oy,
                     vx: params.vx != undefined ? params.vx : 0,
                     vy: params.vy != undefined ? params.vy : 0,
 
@@ -151,6 +159,8 @@ namespace frames {
                 prevParams.stance = result.stance
                 prevParams.action = result.action
                 prevParams.neutral = result.neutral
+                prevParams.ox = result.ox
+                prevParams.oy = result.oy
 
                 return result
             })
@@ -221,7 +231,10 @@ namespace frames {
                 nextFrame.image.flipX()
                 nextFrame.faceRight = target.faceRight
             }
+
+            target.sprite.x += target.sprite.image.width / 2
             target.sprite.setImage(nextFrame.image)
+            target.sprite.x -= nextFrame.image.width / 2
 
             target.sprite.x -= target.ox
             target.sprite.y -= target.oy

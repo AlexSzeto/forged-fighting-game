@@ -95,7 +95,7 @@ namespace inputs {
         StickState.DownBack
     ]
 
-    const CHARGE_DURATION_REQUIREMENT = 2000
+    const CHARGE_DURATION_REQUIREMENT = 1000
     const BUFFER_DURATION = 200
 
     export class MotionInput {
