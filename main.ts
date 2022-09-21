@@ -48,3 +48,7 @@ game.onUpdate(() => {
     }
 
 })
+
+controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
+    frameDebug.buffer.flags = SpriteFlag.Invisible - frameDebug.buffer.flags
+})

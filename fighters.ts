@@ -121,10 +121,11 @@ namespace fighters {
                     }
                 }
             }
-
+/*
             if (this.sprite.y > this.groundPlane + this.oy) {
                 this.sprite.y = this.groundPlane + this.oy
             }
+*/
 
             if(this.sprite.x < 20) {
                 this.sprite.x = 20
@@ -133,9 +134,11 @@ namespace fighters {
                 this.sprite.x = scene.screenWidth() - 20
             }
 
+/*
             if(this.sprite.y < this.groundPlane + this.oy) {
                 this.sprite.ay = this.gravity
             }
+*/
 
             if(
                 (this.action == frames.Action.Pain || this.action == frames.Action.Block)

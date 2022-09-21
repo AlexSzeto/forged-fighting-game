@@ -119,7 +119,8 @@ namespace frames {
                 stance: Stance.Stand,
                 neutral: false,
                 ox: 0,
-                oy: 0
+                oy: 0,
+                hurtbox: undefined,
             }
 
             this.sets[key] = data.map((params, index) => {
@@ -140,6 +141,8 @@ namespace frames {
                         : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
                     hurtbox: params.hurtbox != undefined
                         ? params.hurtbox
+                        : prevParams.hurtbox != undefined
+                        ? prevParams.hurtbox
                         : new collisions.CollisionBox(0, 0, image.width, image.height),
 
                     neutral: params.neutral != undefined ? params.neutral : prevParams.neutral,
@@ -159,6 +162,7 @@ namespace frames {
                 prevParams.stance = result.stance
                 prevParams.action = result.action
                 prevParams.neutral = result.neutral
+                prevParams.hurtbox = result.hurtbox
                 prevParams.ox = result.ox
                 prevParams.oy = result.oy
 
@@ -232,9 +236,9 @@ namespace frames {
                 nextFrame.faceRight = target.faceRight
             }
 
-            target.sprite.x += target.sprite.image.width / 2
+            target.sprite.x += Math.floor(target.sprite.image.width / 2)
             target.sprite.setImage(nextFrame.image)
-            target.sprite.x -= nextFrame.image.width / 2
+            target.sprite.x -= Math.floor(nextFrame.image.width / 2)
 
             target.sprite.x -= target.ox
             target.sprite.y -= target.oy
