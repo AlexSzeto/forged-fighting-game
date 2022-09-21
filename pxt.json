@@ -16,7 +16,8 @@
         "fighters.ts",
         "frames.ts",
         "timers.ts",
-        "ai.ts"
+        "ai.ts",
+        "cauldron.ts"
     ],
     "testFiles": [
         "test.ts"
