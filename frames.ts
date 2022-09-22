@@ -19,7 +19,7 @@ namespace frames {
     }
 
     type FrameParams = {
-        frameIndex?: number
+        imageIndex?: number
 
         // animation
         duration?: number
@@ -34,17 +34,20 @@ namespace frames {
         vy?: number
         motion?: boolean
 
-        // fight attributes
+        // attributes
         neutral?: boolean
         invincible?: boolean
         stance?: Stance
         action?: Action
 
+        // projectile
         create?: FrameData
 
+        // dimensions
         hitbox?: collisions.CollisionBox
         hurtbox?: collisions.CollisionBox
 
+        // hit attributes
         damage?: number
         blockedHigh?: boolean
         blockedLow?: boolean
@@ -52,7 +55,8 @@ namespace frames {
     }
 
     export type Frame = {
-        duration: number
+        imageIndex: number
+        duration: number        
         nextFrame: number
         ox: number
         oy: number
@@ -70,20 +74,20 @@ namespace frames {
         blockedHigh: boolean
         blockedLow: boolean
         knockdown: boolean
+    }
 
+    type FrameSetImage = {
         image: Image
         faceRight: boolean
     }
 
-    type FrameSet = { [key: string]: Frame[] }
-    type InsertFrameSetData = {
-        key: string
-        animation: Image[]
-        data: FrameParams[]
-        projectileDefaults: boolean
+    type FrameSet = {
+        images: FrameSetImage[]
+        frames: Frame[]
     }
+    type FrameSetList = { [key: string]: FrameSet }
 
-    export interface FrameControlledSprite {
+    export class FrameControlledSprite {
         sprite: Sprite
         faceRight: boolean
         ox: number
@@ -91,7 +95,7 @@ namespace frames {
     }
 
     export class FrameData {
-        private sets: FrameSet
+        private sets: FrameSetList
         private _setKey: string
         private _done: boolean
         private _create: FrameData
@@ -107,67 +111,70 @@ namespace frames {
             this.timer = new timers.Timer()
         }
 
-        clone(): FrameData {
-            const result = new FrameData()
-            result.sets = this.sets
-            return result
-        }
-
-        addFrameSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
+        addSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
             const prevParams: FrameParams = {
-                action: Action.Neutral,
-                stance: Stance.Stand,
-                neutral: false,
                 ox: 0,
                 oy: 0,
+                neutral: false,
+                stance: Stance.Stand,
+                action: Action.Neutral,
                 hurtbox: undefined,
             }
 
-            this.sets[key] = data.map((params, index) => {
-                const image = params.frameIndex != null ? animation[params.frameIndex] : animation[index]
-                const result: Frame = {
+            this.sets[key] = {
+                images: animation.map(image => ({
                     image: image,
                     faceRight: false,
+                })),
+                frames: data.map((params, index) => {
+                    const imageIndex = params.imageIndex != undefined ? params.imageIndex : index
+                    const image = animation[imageIndex]
+                    const result: Frame = {
+                        imageIndex: imageIndex,
+                        duration: params.duration != undefined ? params.duration : 200,
+                        nextFrame: params.nextFrame != undefined ? params.nextFrame : index + 1,
 
-                    duration: params.duration != undefined ? params.duration : 200,
-                    nextFrame: params.nextFrame != undefined ? params.nextFrame : index + 1,
-                    ox: params.ox != undefined ? params.ox : prevParams.ox,
-                    oy: params.oy != undefined ? params.oy : prevParams.oy,
-                    vx: params.vx != undefined ? params.vx : 0,
-                    vy: params.vy != undefined ? params.vy : 0,
+                        ox: params.ox != undefined ? params.ox : prevParams.ox,
+                        oy: params.oy != undefined ? params.oy : prevParams.oy,
 
-                    hitbox: params.hitbox != undefined
-                        ? params.hitbox
-                        : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
-                    hurtbox: params.hurtbox != undefined
-                        ? params.hurtbox
-                        : prevParams.hurtbox != undefined
-                        ? prevParams.hurtbox
-                        : new collisions.CollisionBox(0, 0, image.width, image.height),
+                        motion: (params.motion !== undefined)
+                            ? params.motion
+                            : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),
+                        vx: params.vx != undefined ? params.vx : 0,
+                        vy: params.vy != undefined ? params.vy : 0,
 
-                    neutral: params.neutral != undefined ? params.neutral : prevParams.neutral,
-                    invincible: params.invincible != undefined ? params.invincible : false,
-                    stance: params.stance != undefined ? params.stance : prevParams.stance,
-                    action: params.action != undefined ? params.action : prevParams.action,
-                    damage: params.damage != undefined ? params.damage : 0,
-                    blockedHigh: params.blockedHigh != undefined ? params.blockedHigh : true,
-                    blockedLow: params.blockedLow != undefined ? params.blockedLow : true,
-                    knockdown: params.knockdown != undefined ? params.knockdown : false,
-                    create: params.create != undefined ? params.create : null,
-                    motion: (params.motion !== undefined)
-                        ? params.motion
-                        : (index == 0) || (params.vx !== undefined) || (params.vy !== undefined),
-                }
+                        hitbox: params.hitbox != undefined
+                            ? params.hitbox
+                            : (projectileDefaults ? new collisions.CollisionBox(0, 0, image.width, image.height) : null),
+                        hurtbox: params.hurtbox != undefined
+                            ? params.hurtbox
+                            : prevParams.hurtbox != undefined
+                                ? prevParams.hurtbox
+                                : new collisions.CollisionBox(0, 0, image.width, image.height),
 
-                prevParams.stance = result.stance
-                prevParams.action = result.action
-                prevParams.neutral = result.neutral
-                prevParams.hurtbox = result.hurtbox
-                prevParams.ox = result.ox
-                prevParams.oy = result.oy
+                        neutral: params.neutral != undefined ? params.neutral : prevParams.neutral,
+                        invincible: params.invincible != undefined ? params.invincible : false,
+                        stance: params.stance != undefined ? params.stance : prevParams.stance,
+                        action: params.action != undefined ? params.action : prevParams.action,
 
-                return result
-            })
+                        create: params.create != undefined ? params.create : null,
+
+                        damage: params.damage != undefined ? params.damage : 0,
+                        blockedHigh: params.blockedHigh != undefined ? params.blockedHigh : true,
+                        blockedLow: params.blockedLow != undefined ? params.blockedLow : true,
+                        knockdown: params.knockdown != undefined ? params.knockdown : false,
+                    }
+
+                    prevParams.stance = result.stance
+                    prevParams.action = result.action
+                    prevParams.neutral = result.neutral
+                    prevParams.hurtbox = result.hurtbox
+                    prevParams.ox = result.ox
+                    prevParams.oy = result.oy
+
+                    return result
+                })
+            }
         }
 
         get setKey(): string {
@@ -183,12 +190,16 @@ namespace frames {
         }
 
         get frame(): Frame {
-            if(!this.sets[this._setKey]) {
-                console.log(`set not found: <${this._setKey}>`)                
-            } else if(this.frameIndex >= this.sets[this._setKey].length) {
-                console.log(`frame ${this.frameIndex} not in set ${this.setKey}`)
-            }
-            return this.sets[this._setKey][this.frameIndex]
+            // if(!this.sets[this._setKey]) {
+            //     console.log(`set not found: <${this._setKey}>`)                
+            // } else if(this.frameIndex >= this.sets[this._setKey].frames.length) {
+            //     console.log(`frame ${this.frameIndex} not in set ${this.setKey}`)
+            // }
+            return this.sets[this._setKey].frames[this.frameIndex]
+        }
+
+        get image(): FrameSetImage {
+            return this.sets[this._setKey].images[this.frame.imageIndex]
         }
 
         update(target: FrameControlledSprite) {
@@ -200,7 +211,7 @@ namespace frames {
                 if(currentFrame.duration > 0 && this.timer.elapsed >= currentFrame.duration) {
                     this.timer.elapsed -= currentFrame.duration
 
-                    if (currentFrame.nextFrame < 0 || currentFrame.nextFrame >= currentSet.length) {
+                    if (currentFrame.nextFrame < 0 || currentFrame.nextFrame >= currentSet.frames.length) {
                         this._done = true
                     } else {
                         this.frameIndex = currentFrame.nextFrame
@@ -225,25 +236,25 @@ namespace frames {
         }
 
         setFrame(target: FrameControlledSprite) {
-            const nextFrame = this.frame
+            const nextFrame = this.frame            
+            const nextImage = this.image
 
             if(nextFrame.create) {
                 this._create = nextFrame.create
             }
 
-            if (nextFrame.faceRight != target.faceRight) {
-                nextFrame.image.flipX()
-                nextFrame.faceRight = target.faceRight
+            if (nextImage.faceRight != target.faceRight) {
+                nextImage.image.flipX()
+                nextImage.faceRight = target.faceRight
             }
 
-            target.sprite.x += Math.floor(target.sprite.image.width / 2)
-            target.sprite.setImage(nextFrame.image)
-            target.sprite.x -= Math.floor(nextFrame.image.width / 2)
+            target.sprite.setImage(nextImage.image)
+            const imageOffset = -nextImage.image.width / 2
 
             target.sprite.x -= target.ox
             target.sprite.y -= target.oy
-            target.ox = (target.faceRight ? nextFrame.ox : -nextFrame.ox) * target.sprite.scale
-            target.oy = nextFrame.oy * target.sprite.scale
+            target.ox = Math.floor(((target.faceRight ? nextFrame.ox : -nextFrame.ox) + imageOffset) * target.sprite.scale)
+            target.oy = Math.floor(nextFrame.oy * target.sprite.scale)
             target.sprite.x += target.ox
             target.sprite.y += target.oy
 

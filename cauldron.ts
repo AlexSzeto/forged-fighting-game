@@ -14,6 +14,7 @@ namespace cauldron {
         paint(source:frames.FrameControlledSprite, box: collisions.CollisionBox, color: number) {
             if(box) {
                 box.compute(source, this.rect, source.sprite.scale)
+                this.bufferImage.drawRect(source.sprite.x, source.sprite.y, 2, 2, 9)
                 this.bufferImage.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height, color)
             }
         }

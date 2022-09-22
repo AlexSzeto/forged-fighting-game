@@ -1,6 +1,5 @@
 namespace fighters {
 
-
     export type FighterData = {
         frameData: frames.FrameData
         grabData: GrabData[]
@@ -28,6 +27,12 @@ namespace fighters {
         motion: inputs.MotionInput
     }
 
+    const GROUND_PLANE_Y = 90
+    const GRAVITY = 400
+
+    const SPAWN_LEFT_X = 50
+    const SPAWN_RIGHT_X = 100
+
     export class Fighter implements frames.FrameControlledSprite{
         opponent: Fighter
         
@@ -41,15 +46,11 @@ namespace fighters {
         grabData: GrabData[]
         specials: SpecialMoveTracker[] = []
 
-        // temporary
-        gravity: number = 0
-        groundPlane: number = -1
-
         // data cache
         ox: number = 0
         oy: number = 0
 
-        constructor(data: FighterData, input: inputs.Input, spawnAs1P: boolean) {
+        constructor(data: FighterData, input: inputs.Input, spawnLeft: boolean) {
             this.frameData = data.frameData
             this.input = input
             this.grabData = data.grabData
@@ -63,82 +64,76 @@ namespace fighters {
                 })
             }
 
-            this.faceRight = spawnAs1P
+            this.faceRight = spawnLeft
 
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Player)
             this.sprite.setFlag(SpriteFlag.StayInScreen, true)
-            this.sprite.scale = 1.0
-            this.gravity = 400 * this.sprite.scale
 
-            if (spawnAs1P) {
-                this.sprite.x = 40
+            if (spawnLeft) {
+                this.sprite.x = SPAWN_LEFT_X
             } else {
-                this.sprite.x = 100
+                this.sprite.x = SPAWN_RIGHT_X
             }
-            //this.sprite.y = 80
 
             this.frameData.setFrameSet('idle', this)
+            this.sprite.y = this.groundPlane
         }
         
-        get airborne(): boolean { return this.frameData.frame.stance == frames.Stance.Airborne }
-        get action(): frames.Action { return this.frameData.frame.action }
-        get attacking(): boolean { return this.action == frames.Action.Attack }
         get stance(): frames.Stance { return this.frameData.frame.stance }
+        get action(): frames.Action { return this.frameData.frame.action }
         get neutral(): boolean { return this.frameData.frame.neutral }
+        get attacking(): boolean { return this.action == frames.Action.Attack }
+        get airborne(): boolean { return this.frameData.frame.stance == frames.Stance.Airborne }
+
         get groundedNeutral(): boolean { return this.neutral && !this.airborne }
+        get groundPlane(): number { return GROUND_PLANE_Y - this.oy }
+
+        get frame(): frames.Frame { return this.frameData.frame }
 
         processInput(): void {
-            if(this.groundPlane < 0) {
-                this.groundPlane = this.sprite.y
-            }
-
             this.input.update(this.faceRight)
-
             const prevKey = this.frameData.setKey
 
             // FRAME SET RESET
-            if(this.frameData.done) {
+            if(this.frameData.done) {                
+                // TODO: air recovery
                 this.frameData.setFrameSet('idle')
             }
 
-            // START TEMP MANAGEMENT
-            if (this.airborne && this.sprite.vy > 0 && this.sprite.y > this.groundPlane + this.oy) {
-                if(this.frameData.setKey == 'jump-wound') {
-                    this.frameData.setFrameSet('prone')
-                } else {
+            // LANDING
+            if (this.airborne) {
+                if (this.sprite.vy > 0 && this.sprite.y >= this.groundPlane) {
                     this.sprite.ay = 0
-                    this.frameData.setFrameSet('idle')
 
-                    if (
-                        (this.sprite.x > this.opponent.sprite.x && this.faceRight)
-                        || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
-                    ) {
-                    // {
-                        this.faceRight = !this.faceRight
-                        this.frameData.setFrame(this)
-                        this.opponent.faceRight = !this.opponent.faceRight
-                        this.opponent.frameData.setFrame(this)
+                    if (this.frameData.setKey == 'jump-wound') {
+                        this.frameData.setFrameSet('prone')
+                    } else {
+                        this.frameData.setFrameSet('idle')
                     }
+                } else {
+                    this.sprite.ay = GRAVITY * this.sprite.scale
                 }
             }
-/*
-            if (this.sprite.y > this.groundPlane + this.oy) {
-                this.sprite.y = this.groundPlane + this.oy
-            }
-*/
+
+            // TURNING
+            // if (
+            //     (this.sprite.x > this.opponent.sprite.x && this.faceRight)
+            //     || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
+            // ) {
+            //     this.faceRight = !this.faceRight
+            //     this.frameData.setFrame(this)
+            //     this.opponent.faceRight = !this.opponent.faceRight
+            //     this.opponent.frameData.setFrame(this)
+            // }
+
 
             if(this.sprite.x < 20) {
                 this.sprite.x = 20
             }
+
             if(this.sprite.x > scene.screenWidth() - 20) {
                 this.sprite.x = scene.screenWidth() - 20
             }
-
-/*
-            if(this.sprite.y < this.groundPlane + this.oy) {
-                this.sprite.ay = this.gravity
-            }
-*/
 
             if(
                 (this.action == frames.Action.Pain || this.action == frames.Action.Block)
@@ -249,6 +244,7 @@ namespace fighters {
             }
 
             this.frameData.update(this)
+
             const create = this.frameData.create
             if (create) {
                 const projectile = new Projectile(create, this)
@@ -309,7 +305,6 @@ namespace fighters {
             public frameData: frames.FrameData,
             public createdBy: Fighter
         ) {
-            this.frameData = this.frameData.clone()
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
             projectileList.push(this)
             this.sprite.setFlag(SpriteFlag.AutoDestroy, true)
