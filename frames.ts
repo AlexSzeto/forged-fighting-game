@@ -94,6 +94,13 @@ namespace frames {
         oy: number
     }
 
+    type SpritePauseData = {
+        vx: number,
+        vy: number,
+        ax: number,
+        ay: number,
+    }
+
     export class FrameData {
         private sets: FrameSetList
         private _setKey: string
@@ -101,6 +108,7 @@ namespace frames {
         private _create: FrameData
         private frameIndex: number
         private timer: timers.Timer
+        private pauseData: SpritePauseData
 
         hitDone: boolean = false
 
@@ -109,6 +117,12 @@ namespace frames {
             this.frameIndex = 0
             this._done = false
             this.timer = new timers.Timer()
+            this.pauseData = {
+                vx: 0,
+                vy: 0,
+                ax: 0,
+                ay: 0
+            }
         }
 
         addSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
@@ -202,14 +216,35 @@ namespace frames {
             return this.sets[this._setKey].images[this.frame.imageIndex]
         }
 
+        pause(target: FrameControlledSprite, duration: number) {
+            this.pauseData.vx = target.sprite.vx
+            this.pauseData.vy = target.sprite.vy
+            this.pauseData.ax = target.sprite.ax
+            this.pauseData.ay = target.sprite.ay
+
+            this.timer.pause(duration)
+        }
+
         update(target: FrameControlledSprite) {
             this._create = null
-            this.timer.update()
+            if(this.timer.update()) {
+                target.sprite.vx = this.pauseData.vx
+                target.sprite.vy = this.pauseData.vy
+                target.sprite.ax = this.pauseData.ax
+                target.sprite.ay = this.pauseData.ay
+            } else if (this.timer.paused) {
+                target.sprite.vx = 0
+                target.sprite.vy = 0
+                target.sprite.ax = 0
+                target.sprite.ay = 0
+            }
+
             if(!this._done) {
                 const currentSet = this.sets[this._setKey]
                 const currentFrame = this.frame
                 if(currentFrame.duration > 0 && this.timer.elapsed >= currentFrame.duration) {
                     this.timer.elapsed -= currentFrame.duration
+                    this.hitDone = false
 
                     if (currentFrame.nextFrame < 0 || currentFrame.nextFrame >= currentSet.frames.length) {
                         this._done = true

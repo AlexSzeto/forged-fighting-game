@@ -1,17 +1,38 @@
 namespace timers {
+
     export class Timer {
+        
         private timer: number
+        private pauseRemainder: number
         elapsed: number
 
-        constructor() {
+        constructor() {            
             this.timer = game.runtime()
             this.elapsed = 0
+            this.pauseRemainder = 0            
         }
 
-        update(): void {
+        update(): boolean {
+            const wasPaused = this.pauseRemainder > 0
             const currentTime = game.runtime()
-            this.elapsed += currentTime - this.timer
+            if(this.pauseRemainder > 0) {
+                this.pauseRemainder -= currentTime - this.timer
+                if (this.pauseRemainder <= 0) {
+                    this.elapsed += -this.pauseRemainder
+                }
+            } else {
+                this.elapsed += currentTime - this.timer
+            }
             this.timer = currentTime
+            return wasPaused && this.pauseRemainder <= 0
+        }
+
+        pause(duration: number): void {
+            this.pauseRemainder = duration
+        }
+
+        get paused(): boolean {
+            return this.pauseRemainder > 0
         }
     }
 

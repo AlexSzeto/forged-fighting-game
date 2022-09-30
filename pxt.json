@@ -17,7 +17,8 @@
         "frames.ts",
         "timers.ts",
         "ai.ts",
-        "cauldron.ts"
+        "cauldron.ts",
+        "particles.ts"
     ],
     "testFiles": [
         "test.ts"

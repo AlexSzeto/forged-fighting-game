@@ -27,13 +27,16 @@ namespace fighters {
         motion: inputs.MotionInput
     }
 
-    const GROUND_PLANE_Y = 90
+    const GROUND_PLANE_Y = 90 - 15
     const GRAVITY = 400
 
     const SPAWN_LEFT_X = 50
     const SPAWN_RIGHT_X = 100
 
-    export class Fighter implements frames.FrameControlledSprite{
+    const HIT_STOP = 200
+    const BLOCK_STOP = 100
+
+    export class Fighter implements frames.FrameControlledSprite {
         opponent: Fighter
         
         // view
@@ -76,7 +79,7 @@ namespace fighters {
             }
 
             this.frameData.setFrameSet('idle', this)
-            this.sprite.y = this.groundPlane
+            this.sprite.y = GROUND_PLANE_Y
         }
         
         get stance(): frames.Stance { return this.frameData.frame.stance }
@@ -86,7 +89,6 @@ namespace fighters {
         get airborne(): boolean { return this.frameData.frame.stance == frames.Stance.Airborne }
 
         get groundedNeutral(): boolean { return this.neutral && !this.airborne }
-        get groundPlane(): number { return GROUND_PLANE_Y - this.oy }
 
         get frame(): frames.Frame { return this.frameData.frame }
 
@@ -97,18 +99,21 @@ namespace fighters {
             // FRAME SET RESET
             if(this.frameData.done) {                
                 // TODO: air recovery
-                this.frameData.setFrameSet('idle')
+                this.frameData.setFrameSet('idle', this)
+                this.sprite.y = GROUND_PLANE_Y
             }
 
             // LANDING
             if (this.airborne) {
-                if (this.sprite.vy > 0 && this.sprite.y >= this.groundPlane) {
+                if (this.sprite.vy > 0 && this.sprite.y - this.oy >= GROUND_PLANE_Y) {
                     this.sprite.ay = 0
+                    this.sprite.vy = 0
 
                     if (this.frameData.setKey == 'jump-wound') {
-                        this.frameData.setFrameSet('prone')
+                        this.frameData.setFrameSet('prone', this)
                     } else {
-                        this.frameData.setFrameSet('idle')
+                        this.frameData.setFrameSet('idle', this)
+                        this.sprite.y = GROUND_PLANE_Y
                     }
                 } else {
                     this.sprite.ay = GRAVITY * this.sprite.scale
@@ -116,15 +121,17 @@ namespace fighters {
             }
 
             // TURNING
-            // if (
-            //     (this.sprite.x > this.opponent.sprite.x && this.faceRight)
-            //     || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
-            // ) {
-            //     this.faceRight = !this.faceRight
-            //     this.frameData.setFrame(this)
-            //     this.opponent.faceRight = !this.opponent.faceRight
-            //     this.opponent.frameData.setFrame(this)
-            // }
+            if (
+                this.groundedNeutral && (
+                (this.sprite.x > this.opponent.sprite.x && this.faceRight)
+                || (this.sprite.x < this.opponent.sprite.x && !this.faceRight)
+                )
+            ) {
+                this.faceRight = !this.faceRight
+                this.frameData.setFrame(this)
+                // this.opponent.faceRight = !this.opponent.faceRight
+                // this.opponent.frameData.setFrame(this)
+            }
 
 
             if(this.sprite.x < 20) {
@@ -406,6 +413,11 @@ namespace fighters {
         }
         if(p2Hit) {
             p2.resolveHit(p1Frame)
+        }
+
+        if (p1Hit || p2Hit) {
+            p1.frameData.pause(p1, HIT_STOP)
+            p2.frameData.pause(p2, HIT_STOP)
         }
     }
 
