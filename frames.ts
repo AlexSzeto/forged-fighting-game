@@ -49,6 +49,7 @@ namespace frames {
 
         // hit attributes
         damage?: number
+        color?: number
         blockedHigh?: boolean
         blockedLow?: boolean
         knockdown?: boolean
@@ -71,6 +72,7 @@ namespace frames {
         hitbox: collisions.CollisionBox
         hurtbox: collisions.CollisionBox
         damage: number
+        color: number
         blockedHigh: boolean
         blockedLow: boolean
         knockdown: boolean
@@ -133,6 +135,7 @@ namespace frames {
                 stance: Stance.Stand,
                 action: Action.Neutral,
                 hurtbox: undefined,
+                color: 1,
             }
 
             this.sets[key] = {
@@ -174,6 +177,7 @@ namespace frames {
                         create: params.create != undefined ? params.create : null,
 
                         damage: params.damage != undefined ? params.damage : 0,
+                        color: params.color != undefined ? params.color : prevParams.color,
                         blockedHigh: params.blockedHigh != undefined ? params.blockedHigh : true,
                         blockedLow: params.blockedLow != undefined ? params.blockedLow : true,
                         knockdown: params.knockdown != undefined ? params.knockdown : false,
@@ -185,6 +189,7 @@ namespace frames {
                     prevParams.hurtbox = result.hurtbox
                     prevParams.ox = result.ox
                     prevParams.oy = result.oy
+                    prevParams.color = result.color
 
                     return result
                 })

@@ -36,6 +36,8 @@ namespace fighters {
     const HIT_STOP = 200
     const BLOCK_STOP = 100
 
+    const BLOCK_COLOR = 10
+
     export class Fighter implements frames.FrameControlledSprite {
         opponent: Fighter
         
@@ -260,7 +262,21 @@ namespace fighters {
             }
         }
 
-        resolveHit(attackerFrame: frames.Frame) {
+        processBlocks(): void {
+            if (
+                this.groundedNeutral &&
+                (this.opponent.attacking || hasProjectileThreat(this))
+            ) {
+                switch (this.input.stick) {
+                    case inputs.StickState.DownBack:
+                            this.frameData.setFrameSet('crouch-block', this)
+                    case inputs.StickState.Back:
+                            this.frameData.setFrameSet('stand-block', this)
+                }
+            }
+        }
+
+        resolveHit(attackerFrame: frames.Frame, collisionBox: collisions.Rectangle) {
             if (
                 this.action == frames.Action.Block
                 && (
@@ -268,6 +284,7 @@ namespace fighters {
                     || (attackerFrame.blockedLow && this.stance == frames.Stance.Crouched)
                 )
             ) {
+                sfx.startBlockSpark((collisionBox.left + collisionBox.right) / 2, (collisionBox.top + collisionBox.bottom) / 2)
                 this.sprite.z = 10
                 switch (this.frameData.frame.stance) {
                     case frames.Stance.Stand:
@@ -280,6 +297,7 @@ namespace fighters {
                 return
             }
 
+            sfx.startHitSpark((collisionBox.left + collisionBox.right) / 2, (collisionBox.top + collisionBox.bottom) / 2, attackerFrame.color)
             if (attackerFrame.knockdown) {
                 this.frameData.setFrameSet('jump-wound', this)
                 return
@@ -355,8 +373,9 @@ namespace fighters {
             if (this.createdBy != target && this.active && !target.frameData.frame.invincible) {
                 this.frameData.frame.hitbox.compute(this, collisions.box1)
                 target.frameData.frame.hurtbox.compute(target, collisions.box2)
-                if(collisions.box1.collideWith(collisions.box2)) {
-                    target.resolveHit(this.frameData.frame)
+                const collisionBox = collisions.box1.collideWith(collisions.box2)
+                if(collisionBox != null) {
+                    target.resolveHit(this.frameData.frame, collisionBox)
                     this.cancel()
                 }
             }
@@ -392,27 +411,30 @@ namespace fighters {
         const p1Frame = p1.frameData.frame
         const p2Frame = p2.frameData.frame
 
-        const registerHit = (attacker: Fighter, defender: Fighter):boolean => {
+        const registerHit = (attacker: Fighter, defender: Fighter): collisions.Rectangle => {
             if(!attacker.frameData.hitDone && !defender.frameData.frame.invincible && attacker.frameData.frame.hitbox) {
                 attacker.frameData.frame.hitbox.compute(attacker, collisions.box1)
                 defender.frameData.frame.hurtbox.compute(defender, collisions.box2)
-                if (collisions.box1.collideWith(collisions.box2)) {
+                const box = collisions.box1.collideWith(collisions.box2)
+                if (box != null) {                    
                     attacker.frameData.hitDone = true
                     attacker.sprite.z = 20
-                    return true
+                    return box
                 }
             }
-            return false
+            return null
         }
 
-        const p2Hit = registerHit(p1, p2)
-        const p1Hit = registerHit(p2, p1)
+        const p2HitBox = registerHit(p1, p2)
+        const p2Hit = p2HitBox != null
+        const p1HitBox = registerHit(p2, p1)
+        const p1Hit = p1HitBox != null
 
         if(p1Hit) {
-            p1.resolveHit(p2Frame)
+            p1.resolveHit(p2Frame, p1HitBox)
         }
         if(p2Hit) {
-            p2.resolveHit(p1Frame)
+            p2.resolveHit(p1Frame, p2HitBox)
         }
 
         if (p1Hit || p2Hit) {
