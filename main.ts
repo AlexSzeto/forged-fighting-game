@@ -1,4 +1,3 @@
-/*
 scene.setBackgroundImage(assets.image`forest2`)
 scene.setBackgroundColor(Math.randomRange(1, 15))
 const p1Input = new ai.AIInput()
@@ -20,7 +19,10 @@ const fighterList = [p1, p2]
 const frameDebug = new cauldron.FrameDebugger()
 
 game.onUpdate(() => {    
-    
+
+    p1.processBlocks()
+    p2.processBlocks()
+
     fighters.processHits(p1, p2)
 
     p1.processInput()
@@ -55,7 +57,3 @@ game.onUpdate(() => {
 controller.menu.onEvent(ControllerButtonEvent.Pressed, () => {
     frameDebug.buffer.flags = SpriteFlag.Invisible - frameDebug.buffer.flags
 })
-*/
-
-scene.setBackgroundColor(4)
-sfx.start()
