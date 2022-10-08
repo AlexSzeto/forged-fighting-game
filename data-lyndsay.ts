@@ -17,13 +17,13 @@ const LYNDSAY_FIREBALL = (): frames.FrameData => {
     data.addSet('death', assets.animation`projectile-fireball-death`, [
         {
             vx: 10,
-            duration: 50,
+            duration: 100,
         },
         {
-            duration: 50,
+            duration: 100,
         },
         {
-            duration: 50,
+            duration: 100,
         }
     ], true)
 
@@ -147,7 +147,6 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         {
             duration: 50,
             hitbox: new collisions.CollisionBox(8, 11, 14, 12),
-            blockedHigh: false,
         },
         {
             duration: 150,
