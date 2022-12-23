@@ -18,14 +18,13 @@
         "timers.ts",
         "ai.ts",
         "cauldron.ts",
-        "particles.ts",
-        "data-anjela.ts"
+        "particles.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "targetVersions": {
-        "target": "1.11.37",
+        "target": "1.10.34",
         "targetId": "arcade"
     },
     "supportedTargets": [
