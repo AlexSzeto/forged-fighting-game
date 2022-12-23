@@ -6,7 +6,7 @@ const LYNDSAY_FIREBALL = (): frames.FrameData => {
         {
             action: frames.Action.Attack,
             color: 2,
-            vx: 75,
+            vx: 60,
             duration: 150,
         },
         {
@@ -35,37 +35,122 @@ const LYNDSAY_TORNADO = (): frames.FrameData => {
 
     data.addSet('active', assets.animation`projectile-fire-tornado`, [
         {
-            duration: 50,
-            ox: 15,
-            oy:-18
+            action: frames.Action.Attack,
+            invincible: true,
+            ox: 0,
+            oy: 6,
+            vx: 120,
+            duration: 450,
+            color: 2,
         },
         {
-            duration: 50,
+            knockdown: true,
+            vx: 40,
+            vy: -40,
+            duration: 75,
         },
         {
             action: frames.Action.Attack,
+            invincible: true,
             knockdown: true,
-            vy: -160,
+            vx: 20,
+            vy: -20,
+            duration: 75,
+        },
+        {
+            action: frames.Action.Attack,
+            invincible: true,
+            knockdown: true,
+            vx: 20,
+            vy: 30,
+            duration: 75,
+        },
+        {
+            vx: 20,
+            vy: 30,
+            duration: 75,
+        },
+        {
+            vx: 20,
+            vy: 0,
+            duration: 75,
+        }
+    ], true)
+    data.addSet('death', assets.animation`projectile-fireball-death`, [
+        {
+            vx: 10,
             duration: 100,
         },
         {
-            imageIndex: 3,
-            duration: 50,
+            duration: 100,
         },
         {
-            imageIndex: 4,
-            duration: 50,
+            duration: 100,
         }
     ], true)
-    data.addSet('death', assets.animation`projectile-fire-tornado`, [
+
+    return data
+}
+
+const LYNDSAY_TORNADO2 = (): frames.FrameData => {
+    const data = new frames.FrameData()
+
+    data.addSet('active', assets.animation`projectile-fire-tornado`, [
         {
-            oy: -18,
-            imageIndex: 3,
-            duration: 50,
+            action: frames.Action.Attack,
+            invincible: true,
+            ox: 0,
+            oy: 6,
+            vx: 20,
+            vy: 0,
+            duration: 75,
+            color: 2,
         },
         {
-            imageIndex: 4,
-            duration: 50,
+            action: frames.Action.Attack,
+            invincible: true,
+            knockdown: true,
+            vx: 80,
+            vy: -120,
+            duration: 75,
+        },
+        {
+            action: frames.Action.Attack,
+            invincible: true,
+            knockdown: true,
+            vx: 80,
+            vy: -120,
+            duration: 75,
+        },
+        {
+            action: frames.Action.Attack,
+            invincible: true,
+            knockdown: true,
+            vx: 80,
+            vy: -120,
+            duration: 75,
+        },
+        {
+            vx: 20,
+            vy: 20,
+            duration: 75,
+        },
+        {
+            vx: 20,
+            vy: 0,
+            duration: 75,
+        }
+    ], true)
+    data.addSet('death', assets.animation`projectile-fireball-death`, [
+        {
+            vx: 10,
+            duration: 100,
+        },
+        {
+            duration: 100,
+        },
+        {
+            duration: 100,
         }
     ], true)
 
@@ -88,14 +173,20 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
                 frameSetKey: 'special-fireball',
                 ground: true,
                 air: false,
-                motionInput: 'CB,F,P'
+                motionInput: 'D,DF,F,P'
             },
-            // {
-            //     frameSetKey: 'special-tornado',
-            //     ground: true,
-            //     air: false,
-            //     motionInput: 'CD,B,P'
-            // }
+            {
+                frameSetKey: 'special-tornado-close',
+                ground: true,
+                air: false,
+                motionInput: 'B,DB,D,K'
+            },
+            {
+                frameSetKey: 'special-tornado-far',
+                ground: true,
+                air: false,
+                motionInput: 'B,DB,D,P'
+            }
 
         ]
     }
@@ -469,29 +560,50 @@ const LYNDSAY_FIGHTER = (): fighters.FighterData => {
         }
     ])
 
-    data.frameData.addSet('special-tornado', assets.animation`lyndsay-fire-tornado`, [
+    data.frameData.addSet('special-tornado-far', assets.animation`lyndsay-fire-tornado`, [
         {
             action: frames.Action.Special,
-            imageIndex: 1,
             oy: -7,
-            duration: 100,
+            duration: 175,
+            imageIndex: 1,
             invincible: true,
         },
         {
             duration: 150,
-            invincible: true,
+            imageIndex: 2
+        },
+        {
+            duration: 100,
             imageIndex: 3,
             create: LYNDSAY_TORNADO()
         },
         {
             duration: 550,
-            imageIndex: 4
-        }
+            imageIndex: 4,
+        },
+    ])
 
-            
-           
-           
-
+    data.frameData.addSet('special-tornado-close', assets.animation`lyndsay-fire-tornado`, [
+        {
+            action: frames.Action.Special,
+            oy: -7,
+            duration: 100,
+            imageIndex: 1,
+            invincible: true,
+        },
+        {
+            duration: 100,
+            imageIndex: 2
+        },
+        {
+            duration: 100,
+            imageIndex: 3,
+            create: LYNDSAY_TORNADO2()
+        },
+        {
+            duration: 400,
+            imageIndex: 4,
+        },
     ])
 
     return data

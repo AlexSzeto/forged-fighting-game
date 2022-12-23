@@ -256,6 +256,7 @@ namespace fighters {
 
             const create = this.frameData.create
             if (create) {
+                console.log('lets go')
                 const projectile = new Projectile(create, this)
                 projectile.sprite.z = 20
                 
@@ -330,6 +331,7 @@ namespace fighters {
             public frameData: frames.FrameData,
             public createdBy: Fighter
         ) {
+            this.frameData = this.frameData.clone()
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
             projectileList.push(this)
             this.sprite.setFlag(SpriteFlag.AutoDestroy, true)
@@ -337,7 +339,7 @@ namespace fighters {
             this.sprite.y = this.createdBy.sprite.y
             this.faceRight = this.createdBy.faceRight
 
-            this.frameData.setFrameSet('active', this)
+            this.frameData.setFrameSet('active', this, true)
         }
 
         get active() {
@@ -347,6 +349,7 @@ namespace fighters {
         update(): void {
             this.frameData.update(this)
             if(this.frameData.done) {
+                console.log('done')
                 this.sprite.destroy()
             }
         }
@@ -362,6 +365,7 @@ namespace fighters {
                 this.frameData.frame.hitbox.compute(this, collisions.box1)
                 target.frameData.frame.hitbox.compute(target, collisions.box2)
                 if(collisions.box1.collideWith(collisions.box2)) {
+                    console.log('cancel')
                     this.cancel()
                     target.cancel()
                 }
@@ -375,6 +379,7 @@ namespace fighters {
                 target.frameData.frame.hurtbox.compute(target, collisions.box2)
                 const collisionBox = collisions.box1.collideWith(collisions.box2)
                 if(collisionBox != null) {
+                    console.log('hit')
                     target.resolveHit(this.frameData.frame, collisionBox)
                     this.cancel()
                 }

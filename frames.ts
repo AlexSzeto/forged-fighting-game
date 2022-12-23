@@ -127,6 +127,12 @@ namespace frames {
             }
         }
 
+        clone(): FrameData {
+            const dupe = new FrameData()
+            dupe.sets = this.sets
+            return dupe
+        }
+
         addSet(key: string, animation: Image[], data: FrameParams[], projectileDefaults: boolean = false, clone: boolean = false): void {
             const prevParams: FrameParams = {
                 ox: 0,
@@ -280,6 +286,7 @@ namespace frames {
             const nextImage = this.image
 
             if(nextFrame.create) {
+                console.log('creating now')
                 this._create = nextFrame.create
             }
 
