@@ -56,7 +56,7 @@ namespace ai {
 
                 if (this.interval.elapsed > 250 && this.opponent.attacking) {
                     this.interval.elapsed = 0
-                    if(Math.percentChance(50)) {
+                    if(Math.percentChance(75)) {
                         this.stick = inputs.StickState.Back
                     }                    
                 } else if (this.interval.elapsed > 500) {
