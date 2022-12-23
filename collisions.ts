@@ -19,18 +19,8 @@ namespace collisions {
             this.height = height
         }
 
-        collideWith(target: Rectangle): Rectangle {
-            return (target.right >= this.left && target.left <= this.right && target.bottom >= this.top && target.top <= this.bottom) ?
-                this.getCollisionBox(target) : null
-        }
-
-        getCollisionBox(target: Rectangle): Rectangle {
-            const box = new Rectangle()
-            box.x = this.left < target.left ? target.left : this.left
-            box.width = this.right < target.right ? this.right - box.left : target.right - box.left
-            box.y = this.top < target.top ? target.top : this.top
-            box.height = this.bottom < target.bottom ? this.bottom - box.top : target.bottom - box.top
-            return box
+        collideWith(target: Rectangle): boolean {
+            return (target.right >= this.left && target.left <= this.right && target.bottom >= this.top && target.top <= this.bottom)
         }
     }
 

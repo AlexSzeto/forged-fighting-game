@@ -36,8 +36,6 @@ namespace fighters {
     const HIT_STOP = 200
     const BLOCK_STOP = 100
 
-    const BLOCK_COLOR = 10
-
     export class Fighter implements frames.FrameControlledSprite {
         opponent: Fighter
         
@@ -256,28 +254,13 @@ namespace fighters {
 
             const create = this.frameData.create
             if (create) {
-                console.log('lets go')
                 const projectile = new Projectile(create, this)
                 projectile.sprite.z = 20
                 
             }
         }
 
-        processBlocks(): void {
-            if (
-                this.groundedNeutral &&
-                (this.opponent.attacking || hasProjectileThreat(this))
-            ) {
-                switch (this.input.stick) {
-                    case inputs.StickState.DownBack:
-                            this.frameData.setFrameSet('crouch-block', this)
-                    case inputs.StickState.Back:
-                            this.frameData.setFrameSet('stand-block', this)
-                }
-            }
-        }
-
-        resolveHit(attackerFrame: frames.Frame, collisionBox: collisions.Rectangle) {
+        resolveHit(attackerFrame: frames.Frame) {
             if (
                 this.action == frames.Action.Block
                 && (
@@ -285,7 +268,6 @@ namespace fighters {
                     || (attackerFrame.blockedLow && this.stance == frames.Stance.Crouched)
                 )
             ) {
-                sfx.startBlockSpark((collisionBox.left + collisionBox.right) / 2, (collisionBox.top + collisionBox.bottom) / 2)
                 this.sprite.z = 10
                 switch (this.frameData.frame.stance) {
                     case frames.Stance.Stand:
@@ -298,7 +280,6 @@ namespace fighters {
                 return
             }
 
-            sfx.startHitSpark((collisionBox.left + collisionBox.right) / 2, (collisionBox.top + collisionBox.bottom) / 2, attackerFrame.color)
             if (attackerFrame.knockdown) {
                 this.frameData.setFrameSet('jump-wound', this)
                 return
@@ -331,7 +312,6 @@ namespace fighters {
             public frameData: frames.FrameData,
             public createdBy: Fighter
         ) {
-            this.frameData = this.frameData.clone()
             this.sprite = sprites.create(assets.image`pixel`, SpriteKind.Projectile)
             projectileList.push(this)
             this.sprite.setFlag(SpriteFlag.AutoDestroy, true)
@@ -339,7 +319,7 @@ namespace fighters {
             this.sprite.y = this.createdBy.sprite.y
             this.faceRight = this.createdBy.faceRight
 
-            this.frameData.setFrameSet('active', this, true)
+            this.frameData.setFrameSet('active', this)
         }
 
         get active() {
@@ -349,7 +329,6 @@ namespace fighters {
         update(): void {
             this.frameData.update(this)
             if(this.frameData.done) {
-                console.log('done')
                 this.sprite.destroy()
             }
         }
@@ -365,7 +344,6 @@ namespace fighters {
                 this.frameData.frame.hitbox.compute(this, collisions.box1)
                 target.frameData.frame.hitbox.compute(target, collisions.box2)
                 if(collisions.box1.collideWith(collisions.box2)) {
-                    console.log('cancel')
                     this.cancel()
                     target.cancel()
                 }
@@ -377,10 +355,8 @@ namespace fighters {
             if (this.createdBy != target && this.active && !target.frameData.frame.invincible) {
                 this.frameData.frame.hitbox.compute(this, collisions.box1)
                 target.frameData.frame.hurtbox.compute(target, collisions.box2)
-                const collisionBox = collisions.box1.collideWith(collisions.box2)
-                if(collisionBox != null) {
-                    console.log('hit')
-                    target.resolveHit(this.frameData.frame, collisionBox)
+                if(collisions.box1.collideWith(collisions.box2)) {
+                    target.resolveHit(this.frameData.frame)
                     this.cancel()
                 }
             }
@@ -416,30 +392,27 @@ namespace fighters {
         const p1Frame = p1.frameData.frame
         const p2Frame = p2.frameData.frame
 
-        const registerHit = (attacker: Fighter, defender: Fighter): collisions.Rectangle => {
+        const registerHit = (attacker: Fighter, defender: Fighter):boolean => {
             if(!attacker.frameData.hitDone && !defender.frameData.frame.invincible && attacker.frameData.frame.hitbox) {
                 attacker.frameData.frame.hitbox.compute(attacker, collisions.box1)
                 defender.frameData.frame.hurtbox.compute(defender, collisions.box2)
-                const box = collisions.box1.collideWith(collisions.box2)
-                if (box != null) {                    
+                if (collisions.box1.collideWith(collisions.box2)) {
                     attacker.frameData.hitDone = true
                     attacker.sprite.z = 20
-                    return box
+                    return true
                 }
             }
-            return null
+            return false
         }
 
-        const p2HitBox = registerHit(p1, p2)
-        const p2Hit = p2HitBox != null
-        const p1HitBox = registerHit(p2, p1)
-        const p1Hit = p1HitBox != null
+        const p2Hit = registerHit(p1, p2)
+        const p1Hit = registerHit(p2, p1)
 
         if(p1Hit) {
-            p1.resolveHit(p2Frame, p1HitBox)
+            p1.resolveHit(p2Frame)
         }
         if(p2Hit) {
-            p2.resolveHit(p1Frame, p2HitBox)
+            p2.resolveHit(p1Frame)
         }
 
         if (p1Hit || p2Hit) {
