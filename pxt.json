@@ -1,30 +1,21 @@
 {
-    "name": "The Crucible",
+    "name": "The Crucible Beta",
     "description": "",
     "dependencies": {
         "device": "*"
     },
     "files": [
-        "main.ts",
         "README.md",
         "assets.json",
         "images.g.jres",
         "images.g.ts",
-        "data-lyndsay.ts",
-        "inputs.ts",
-        "collisions.ts",
-        "fighters.ts",
-        "frames.ts",
-        "timers.ts",
-        "ai.ts",
-        "cauldron.ts",
-        "particles.ts"
+        "main.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "targetVersions": {
-        "target": "1.8.30",
+        "target": "1.12.3",
         "targetId": "arcade"
     },
     "supportedTargets": [
