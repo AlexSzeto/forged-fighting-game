@@ -9,6 +9,11 @@
         "mimeType": "image/x-mkcd-f4",
         "displayName": "forest2"
     },
+    "image2": {
+        "data": "hwQHAAcAAAD/APAPHw8fD/Dx8QAAHw8A8PHxAB8PHw//APAP",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "crosshair"
+    },
     "anim19": {
         "namespace": "myAnimations",
         "id": "anim19",
